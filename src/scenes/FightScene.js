@@ -16,6 +16,7 @@ import MatchTimer from '../ui/MatchTimer.js';
 import { ReplayManager } from '../systems/replay/index.js';
 import StatsManager from '../systems/StatsManager.js';
 import CareerManager from '../systems/CareerManager.js';
+import MobileControls from '../ui/MobileControls.js';
 
 export default class FightScene extends Phaser.Scene {
   constructor() {
@@ -140,6 +141,10 @@ export default class FightScene extends Phaser.Scene {
       // Setup input
       console.log('FightScene: Setting up input');
       this.setupInput();
+
+      // Setup mobile controls
+      this.mobileControls = new MobileControls(this);
+      this.mobileControls.create();
 
       // Setup event listeners
       this.setupEvents();
@@ -1075,18 +1080,45 @@ export default class FightScene extends Phaser.Scene {
       this.replayManager.update();
     }
 
-    // Update player
+    // Update mobile controls
+    if (this.mobileControls) {
+      this.mobileControls.update();
+    }
+
+    // Create combined input that merges keyboard and mobile
+    const mobileMove = this.mobileControls?.getMovement() || { x: 0, y: 0 };
+    const combinedCursors = {
+      up: { isDown: this.cursors.up.isDown || mobileMove.y < -0.3 },
+      down: { isDown: this.cursors.down.isDown || mobileMove.y > 0.3 },
+      left: { isDown: this.cursors.left.isDown || mobileMove.x < -0.3 },
+      right: { isDown: this.cursors.right.isDown || mobileMove.x > 0.3 }
+    };
+
+    const combinedAttack = {
+      isDown: this.attackKey.isDown || this.mobileControls?.isButtonDown('attack')
+    };
+    const combinedPickup = {
+      isDown: this.pickupKey.isDown || this.mobileControls?.isButtonDown('pickup')
+    };
+    const combinedSlam = {
+      isDown: this.tableSlamKey.isDown || this.mobileControls?.isButtonDown('slam')
+    };
+    const combinedGrapple = {
+      isDown: this.grappleKey.isDown || this.mobileControls?.isButtonDown('grapple')
+    };
+
+    // Update player with combined input
     this.player.update(
-      this.cursors,
-      this.attackKey,
-      this.pickupKey,
-      this.tableSlamKey,
+      combinedCursors,
+      combinedAttack,
+      combinedPickup,
+      combinedSlam,
       this.lightFireKey,
-      this.grappleKey
+      combinedGrapple
     );
 
-    // Check for finisher (J + K pressed together when meter full)
-    if (this.attackKey.isDown && this.pickupKey.isDown) {
+    // Check for finisher (Attack + Pickup pressed together when meter full)
+    if (combinedAttack.isDown && combinedPickup.isDown) {
       this.tryFinisher();
     }
 
@@ -1132,6 +1164,7 @@ export default class FightScene extends Phaser.Scene {
     if (this.combatSystem) this.combatSystem.destroy();
     if (this.effectsManager) this.effectsManager.destroy();
     if (this.aiController) this.aiController.destroy();
+    if (this.mobileControls) this.mobileControls.destroy();
     if (this.playerHealthBar) this.playerHealthBar.destroy();
     if (this.enemyHealthBar) this.enemyHealthBar.destroy();
     if (this.extremeMeter) this.extremeMeter.destroy();
