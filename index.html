@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="screen-orientation" content="landscape">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
   <title>CCW: Carnage Championship Wrestling</title>
   <link rel="icon" type="image/webp" href="/assets/ui/logo.webp">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,11 +16,15 @@
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
     }
 
     html, body {
       height: 100%;
       overflow: hidden;
+      touch-action: none;
     }
 
     body {
@@ -27,6 +34,43 @@
       justify-content: center;
       font-family: 'Segoe UI', Arial, sans-serif;
       color: #ccc;
+    }
+
+    /* ============ ROTATE PROMPT FOR PORTRAIT ============ */
+    .rotate-prompt {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: #0a0505;
+      z-index: 9999;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .rotate-prompt .icon {
+      font-size: 60px;
+      margin-bottom: 20px;
+      animation: rotatePhone 1.5s ease-in-out infinite;
+    }
+
+    @keyframes rotatePhone {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(90deg); }
+    }
+
+    .rotate-prompt h2 {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 14px;
+      color: #ff4500;
+      margin-bottom: 10px;
+    }
+
+    .rotate-prompt p {
+      font-size: 12px;
+      color: #888;
     }
 
     /* ============ SIDE PANELS ============ */
@@ -81,7 +125,6 @@
       overflow: hidden;
     }
 
-    /* Inner border glow */
     .marquee::before {
       content: '';
       position: absolute;
@@ -92,7 +135,6 @@
       box-shadow: inset 0 0 20px rgba(255,69,0,0.2);
     }
 
-    /* Animated light strip */
     .marquee::after {
       content: '';
       position: absolute;
@@ -139,7 +181,6 @@
       overflow: hidden;
     }
 
-    /* CRT scanlines */
     .screen-bezel::before {
       content: '';
       position: absolute;
@@ -148,16 +189,6 @@
       background-size: 100% 4px;
       pointer-events: none;
       z-index: 10;
-    }
-
-    /* Screen glow */
-    .screen-bezel::after {
-      content: '';
-      position: absolute;
-      top: -2px; left: -2px; right: -2px; bottom: -2px;
-      border: 2px solid rgba(100,100,120,0.1);
-      border-radius: 10px;
-      pointer-events: none;
     }
 
     #game-container {
@@ -181,13 +212,10 @@
       justify-content: space-between;
       align-items: center;
       position: relative;
-      box-shadow:
-        0 8px 30px rgba(0,0,0,0.8),
-        inset 0 0 30px rgba(0,0,0,0.5);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.8);
       overflow: hidden;
     }
 
-    /* Darkening overlay for readability */
     .bottom-bar::before {
       content: '';
       position: absolute;
@@ -197,30 +225,10 @@
       border-radius: 0 0 12px 12px;
     }
 
-    /* Bottom glow strip to match marquee */
-    .bottom-bar::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: linear-gradient(90deg,
-        transparent 0%,
-        #ff4500 20%,
-        #ffcc00 50%,
-        #ff4500 80%,
-        transparent 100%
-      );
-      opacity: 0.6;
-    }
-
-    /* Player Controls - simplified text labels */
     .player-section {
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
       position: relative;
       z-index: 1;
       padding: 8px 15px;
@@ -233,7 +241,7 @@
       font-family: 'Press Start 2P', cursive;
       font-size: 10px;
       margin-bottom: 8px;
-      text-shadow: 0 0 10px currentColor, 0 2px 4px rgba(0,0,0,0.8);
+      text-shadow: 0 0 10px currentColor;
     }
 
     .player-section.p1 .player-label { color: #00ff00; }
@@ -243,7 +251,6 @@
       font-family: 'Press Start 2P', cursive;
       font-size: 7px;
       color: #ff4500;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
       line-height: 1.6;
       text-align: center;
     }
@@ -257,7 +264,6 @@
       margin: 1px;
     }
 
-    /* Center Section */
     .center-section {
       display: flex;
       flex-direction: column;
@@ -269,13 +275,9 @@
       background: rgba(0,0,0,0.6);
       border-radius: 10px;
       border: 2px solid rgba(255,69,0,0.4);
-      box-shadow: 0 0 20px rgba(255,69,0,0.2);
     }
 
-    .info-buttons {
-      display: flex;
-      gap: 8px;
-    }
+    .info-buttons { display: flex; gap: 8px; }
 
     .info-btn {
       font-family: 'Press Start 2P', cursive;
@@ -287,20 +289,17 @@
       color: #fff;
       cursor: pointer;
       transition: all 0.2s;
-      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
     }
 
     .info-btn:hover {
       background: linear-gradient(180deg, #ff6633 0%, #ff4500 100%);
       transform: translateY(-2px);
-      box-shadow: 0 4px 15px rgba(255,69,0,0.5);
     }
 
     .press-start {
       font-family: 'Press Start 2P', cursive;
       font-size: 9px;
       color: #ffcc00;
-      text-shadow: 0 0 12px #ffcc00, 0 2px 4px rgba(0,0,0,0.8);
       animation: blink 1s infinite;
     }
 
@@ -309,19 +308,8 @@
       50% { opacity: 0.3; }
     }
 
-    .footer-line {
-      font-size: 6px;
-      color: #888;
-    }
-
-    .footer-line a {
-      color: #ff4500;
-      text-decoration: none;
-    }
-
-    .footer-line a:hover {
-      text-decoration: underline;
-    }
+    .footer-line { font-size: 6px; color: #888; }
+    .footer-line a { color: #ff4500; text-decoration: none; }
 
     /* ============ MODAL OVERLAY ============ */
     .modal-overlay {
@@ -332,12 +320,9 @@
       align-items: center;
       justify-content: center;
       z-index: 1000;
-      backdrop-filter: blur(6px);
     }
 
-    .modal-overlay.active {
-      display: flex;
-    }
+    .modal-overlay.active { display: flex; }
 
     .modal-content {
       background: linear-gradient(180deg, #1a1a2a 0%, #0a0a14 100%);
@@ -347,7 +332,6 @@
       max-width: 480px;
       width: 90%;
       position: relative;
-      box-shadow: 0 0 60px rgba(255,69,0,0.5);
     }
 
     .modal-close {
@@ -358,33 +342,19 @@
       font-size: 14px;
       color: #555;
       cursor: pointer;
-      transition: color 0.2s;
     }
 
-    .modal-close:hover {
-      color: #ff4500;
-    }
+    .modal-close:hover { color: #ff4500; }
 
     .modal-title {
       font-family: 'Press Start 2P', cursive;
       font-size: 13px;
       color: #ff4500;
       margin-bottom: 18px;
-      text-shadow: 0 0 12px rgba(255,69,0,0.7);
     }
 
-    .modal-body {
-      color: #999;
-      font-size: 12px;
-      line-height: 1.7;
-    }
-
-    .modal-body h3 {
-      font-family: 'Press Start 2P', cursive;
-      font-size: 9px;
-      color: #ffcc00;
-      margin: 14px 0 8px;
-    }
+    .modal-body { color: #999; font-size: 12px; line-height: 1.7; }
+    .modal-body h3 { font-family: 'Press Start 2P', cursive; font-size: 9px; color: #ffcc00; margin: 14px 0 8px; }
 
     .wrestler-card {
       padding: 10px;
@@ -394,17 +364,8 @@
       border-left: 3px solid #ff4500;
     }
 
-    .wrestler-name {
-      font-family: 'Press Start 2P', cursive;
-      font-size: 9px;
-      color: #fff;
-    }
-
-    .wrestler-style {
-      font-size: 10px;
-      color: #777;
-      margin-top: 4px;
-    }
+    .wrestler-name { font-family: 'Press Start 2P', cursive; font-size: 9px; color: #fff; }
+    .wrestler-style { font-size: 10px; color: #777; margin-top: 4px; }
 
     .match-type {
       display: inline-block;
@@ -415,120 +376,207 @@
       border: 1px solid #333;
     }
 
-    .match-type strong {
-      color: #ff4500;
-      display: block;
-      font-size: 10px;
-      margin-bottom: 4px;
+    .match-type strong { color: #ff4500; display: block; font-size: 10px; margin-bottom: 4px; }
+    .match-type span { font-size: 9px; color: #666; }
+
+    /* ============ MOBILE TOUCH CONTROLS ============ */
+    .mobile-controls {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+      z-index: 100;
     }
 
-    .match-type span {
-      font-size: 9px;
-      color: #666;
+    .touch-zone {
+      position: absolute;
+      pointer-events: auto;
     }
 
-    /* Responsive - Tablet */
-    @media (max-width: 900px) {
-      .cabinet-wrapper {
-        width: 100%;
-        padding: 0;
-      }
-      .marquee, .screen-cabinet, .bottom-bar {
-        width: 100%;
-        max-width: 100%;
-        border-radius: 0;
-        border-left: none;
-        border-right: none;
-      }
-      .marquee {
-        height: 120px;
-        background-size: 160% auto;
-      }
-      .screen-cabinet {
-        padding: 8px;
-      }
-      #game-container {
-        width: 100%;
-        height: auto;
-        aspect-ratio: 16/9;
-      }
-      .bottom-bar {
-        height: auto;
-        flex-wrap: wrap;
-        gap: 8px;
-        justify-content: center;
-        padding: 10px;
-        background-size: cover;
-      }
-      .player-section { display: none; }
-      .center-section {
-        width: 100%;
-        padding: 8px 15px;
-      }
-      .info-btn {
-        font-size: 8px;
-        padding: 8px 14px;
-      }
+    /* D-Pad on Left */
+    .dpad-zone {
+      left: 10px;
+      bottom: 20px;
+      width: 140px;
+      height: 140px;
     }
 
-    /* Responsive - Mobile */
-    @media (max-width: 500px) {
+    .dpad {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    .dpad-btn {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      background: rgba(255,255,255,0.15);
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: rgba(255,255,255,0.6);
+      transition: background 0.1s;
+    }
+
+    .dpad-btn.active {
+      background: rgba(255,69,0,0.6);
+      border-color: #ff4500;
+    }
+
+    .dpad-up { top: 0; left: 50%; transform: translateX(-50%); }
+    .dpad-down { bottom: 0; left: 50%; transform: translateX(-50%); }
+    .dpad-left { left: 0; top: 50%; transform: translateY(-50%); }
+    .dpad-right { right: 0; top: 50%; transform: translateY(-50%); }
+
+    /* Action Buttons on Right */
+    .action-zone {
+      right: 10px;
+      bottom: 20px;
+      width: 150px;
+      height: 150px;
+    }
+
+    .action-btn {
+      position: absolute;
+      width: 55px;
+      height: 55px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Press Start 2P', cursive;
+      font-size: 8px;
+      color: #fff;
+      border: 3px solid;
+      transition: transform 0.1s;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    }
+
+    .action-btn.active {
+      transform: scale(0.9);
+    }
+
+    .btn-attack {
+      background: rgba(220,50,50,0.7);
+      border-color: #ff4444;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    .btn-attack.active { transform: translateY(-50%) scale(0.9); }
+
+    .btn-grapple {
+      background: rgba(50,180,50,0.7);
+      border-color: #44ff44;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    .btn-grapple.active { transform: translateY(-50%) scale(0.9); }
+
+    .btn-pickup {
+      background: rgba(50,100,220,0.7);
+      border-color: #4488ff;
+      left: 50%;
+      top: 0;
+      transform: translateX(-50%);
+    }
+    .btn-pickup.active { transform: translateX(-50%) scale(0.9); }
+
+    .btn-slam {
+      background: rgba(220,150,50,0.7);
+      border-color: #ffaa44;
+      left: 50%;
+      bottom: 0;
+      transform: translateX(-50%);
+    }
+    .btn-slam.active { transform: translateX(-50%) scale(0.9); }
+
+    /* ============ MOBILE LAYOUT ============ */
+    @media (max-width: 900px) and (orientation: landscape) {
       body {
-        justify-content: flex-start;
+        background: #000;
       }
-      .marquee {
-        height: 80px;
-        background-size: 200% auto;
-        background-position: center calc(40% + 10px);
+
+      .cabinet-wrapper {
+        display: none;
       }
-      .screen-cabinet {
-        padding: 4px;
-        border-width: 2px;
+
+      .mobile-game-wrapper {
+        display: flex !important;
+        width: 100%;
+        height: 100%;
+        align-items: center;
+        justify-content: center;
       }
-      .screen-bezel {
-        border-width: 2px;
-        padding: 2px;
+
+      #game-container {
+        width: auto;
+        height: 100vh;
+        aspect-ratio: 16/9;
+        max-width: 100vw;
       }
-      .bottom-bar {
-        padding: 8px;
-        border-width: 2px;
+
+      .mobile-controls {
+        display: block !important;
       }
-      .center-section {
-        padding: 6px 10px;
-        gap: 6px;
-      }
-      .info-buttons {
-        gap: 4px;
-      }
-      .info-btn {
-        font-size: 6px;
-        padding: 6px 10px;
-      }
-      .press-start {
-        font-size: 8px;
-      }
-      .footer-line {
-        font-size: 5px;
-      }
-      .modal-content {
-        padding: 15px 20px;
-        max-height: 80vh;
-        overflow-y: auto;
-      }
-      .modal-title {
-        font-size: 11px;
-      }
-      .modal-body {
-        font-size: 11px;
-      }
-      .wrestler-name {
-        font-size: 8px;
-      }
+
+      .side-panel { display: none !important; }
+    }
+
+    /* Portrait - show rotate message */
+    @media (max-width: 900px) and (orientation: portrait) {
+      .cabinet-wrapper { display: none; }
+      .mobile-game-wrapper { display: none !important; }
+      .rotate-prompt { display: flex !important; }
+    }
+
+    /* Desktop/Tablet Landscape - normal cabinet */
+    @media (min-width: 901px) {
+      .mobile-game-wrapper { display: none !important; }
+      .mobile-controls { display: none !important; }
+      .rotate-prompt { display: none !important; }
+    }
+
+    /* Tablet adjustments */
+    @media (max-width: 900px) and (min-width: 501px) and (orientation: landscape) {
+      .dpad-zone { width: 120px; height: 120px; }
+      .dpad-btn { width: 42px; height: 42px; font-size: 20px; }
+      .action-zone { width: 130px; height: 130px; }
+      .action-btn { width: 48px; height: 48px; font-size: 7px; }
+    }
+
+    /* Small mobile */
+    @media (max-width: 500px) and (orientation: landscape) {
+      .dpad-zone { width: 100px; height: 100px; left: 5px; bottom: 10px; }
+      .dpad-btn { width: 35px; height: 35px; font-size: 16px; }
+      .action-zone { width: 110px; height: 110px; right: 5px; bottom: 10px; }
+      .action-btn { width: 42px; height: 42px; font-size: 6px; }
+    }
+
+    .mobile-game-wrapper {
+      display: none;
+      width: 100%;
+      height: 100%;
     }
   </style>
 </head>
 <body>
-  <!-- SIDE PANEL ART -->
+  <!-- ROTATE PROMPT FOR PORTRAIT -->
+  <div class="rotate-prompt">
+    <div class="icon">📱</div>
+    <h2>ROTATE YOUR DEVICE</h2>
+    <p>CCW plays best in landscape mode</p>
+  </div>
+
+  <!-- SIDE PANEL ART (Desktop only) -->
   <div class="side-panel side-left">
     <img src="assets/ui/cabinet-side-art.webp" alt="">
   </div>
@@ -536,20 +584,15 @@
     <img src="assets/ui/cabinet-side-art.webp" alt="">
   </div>
 
+  <!-- DESKTOP CABINET VIEW -->
   <div class="cabinet-wrapper">
-    <!-- MARQUEE - Now uses the cool generated image -->
     <div class="marquee"></div>
-
-    <!-- GAME SCREEN -->
     <div class="screen-cabinet">
       <div class="screen-bezel">
         <div id="game-container"></div>
       </div>
     </div>
-
-    <!-- BOTTOM BAR -->
     <div class="bottom-bar">
-      <!-- P1 Controls -->
       <div class="player-section p1">
         <div class="player-label">PLAYER 1</div>
         <div class="controls-text">
@@ -557,8 +600,6 @@
           <span class="key">J</span> ATK <span class="key">G</span> GRAPPLE <span class="key">K</span> PICK <span class="key">L</span> SLAM
         </div>
       </div>
-
-      <!-- Center -->
       <div class="center-section">
         <div class="info-buttons">
           <button class="info-btn" onclick="openModal('roster')">ROSTER</button>
@@ -570,8 +611,6 @@
           CCW © 2026 | <a href="https://yadkindatapartners.com" target="_blank">Yadkin Data Partners</a>
         </div>
       </div>
-
-      <!-- P2 Controls -->
       <div class="player-section p2">
         <div class="player-label">PLAYER 2</div>
         <div class="controls-text">
@@ -582,32 +621,43 @@
     </div>
   </div>
 
+  <!-- MOBILE GAME VIEW (landscape only) -->
+  <div class="mobile-game-wrapper">
+    <div id="game-container-mobile"></div>
+  </div>
+
+  <!-- MOBILE TOUCH CONTROLS -->
+  <div class="mobile-controls">
+    <!-- D-Pad -->
+    <div class="touch-zone dpad-zone">
+      <div class="dpad">
+        <div class="dpad-btn dpad-up" data-dir="up">▲</div>
+        <div class="dpad-btn dpad-down" data-dir="down">▼</div>
+        <div class="dpad-btn dpad-left" data-dir="left">◀</div>
+        <div class="dpad-btn dpad-right" data-dir="right">▶</div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="touch-zone action-zone">
+      <div class="action-btn btn-attack" data-action="attack">ATK</div>
+      <div class="action-btn btn-grapple" data-action="grapple">GRP</div>
+      <div class="action-btn btn-pickup" data-action="pickup">PKP</div>
+      <div class="action-btn btn-slam" data-action="slam">SLM</div>
+    </div>
+  </div>
+
   <!-- MODALS -->
   <div class="modal-overlay" id="modal-roster" onclick="closeModal('roster')">
     <div class="modal-content" onclick="event.stopPropagation()">
       <span class="modal-close" onclick="closeModal('roster')">×</span>
       <div class="modal-title">THE ROSTER</div>
       <div class="modal-body">
-        <div class="wrestler-card">
-          <div class="wrestler-name">DUMPSTER DAVE</div>
-          <div class="wrestler-style">Hardcore Legend • Brawler</div>
-        </div>
-        <div class="wrestler-card">
-          <div class="wrestler-name">SCAR</div>
-          <div class="wrestler-style">Death Match King • Technical</div>
-        </div>
-        <div class="wrestler-card">
-          <div class="wrestler-name">BLAZE</div>
-          <div class="wrestler-style">Fire Starter • High Flyer</div>
-        </div>
-        <div class="wrestler-card">
-          <div class="wrestler-name">TANK</div>
-          <div class="wrestler-style">Unstoppable Force • Powerhouse</div>
-        </div>
-        <div class="wrestler-card">
-          <div class="wrestler-name">VIPER</div>
-          <div class="wrestler-style">Snake in the Grass • Technician</div>
-        </div>
+        <div class="wrestler-card"><div class="wrestler-name">DUMPSTER DAVE</div><div class="wrestler-style">Hardcore Legend • Brawler</div></div>
+        <div class="wrestler-card"><div class="wrestler-name">SCAR</div><div class="wrestler-style">Death Match King • Technical</div></div>
+        <div class="wrestler-card"><div class="wrestler-name">BLAZE</div><div class="wrestler-style">Fire Starter • High Flyer</div></div>
+        <div class="wrestler-card"><div class="wrestler-name">TANK</div><div class="wrestler-style">Unstoppable Force • Powerhouse</div></div>
+        <div class="wrestler-card"><div class="wrestler-name">VIPER</div><div class="wrestler-style">Snake in the Grass • Technician</div></div>
       </div>
     </div>
   </div>
@@ -617,22 +667,10 @@
       <span class="modal-close" onclick="closeModal('matches')">×</span>
       <div class="modal-title">MATCH TYPES</div>
       <div class="modal-body">
-        <div class="match-type">
-          <strong>SINGLES</strong>
-          <span>One on one. First to KO wins.</span>
-        </div>
-        <div class="match-type">
-          <strong>HARDCORE</strong>
-          <span>No rules. Chairs and weapons legal.</span>
-        </div>
-        <div class="match-type">
-          <strong>TABLES</strong>
-          <span>Win by putting opponent through a table.</span>
-        </div>
-        <div class="match-type">
-          <strong>INFERNO</strong>
-          <span>Tables can be set on fire. Ultimate destruction.</span>
-        </div>
+        <div class="match-type"><strong>SINGLES</strong><span>One on one. First to KO wins.</span></div>
+        <div class="match-type"><strong>HARDCORE</strong><span>No rules. Chairs and weapons legal.</span></div>
+        <div class="match-type"><strong>TABLES</strong><span>Win by putting opponent through a table.</span></div>
+        <div class="match-type"><strong>INFERNO</strong><span>Tables can be set on fire. Ultimate destruction.</span></div>
       </div>
     </div>
   </div>
@@ -642,27 +680,29 @@
       <span class="modal-close" onclick="closeModal('career')">×</span>
       <div class="modal-title">CAREER MODE</div>
       <div class="modal-body">
-        <p>Rise from unknown rookie to CCW Champion in a 5-chapter storyline filled with rivalries, betrayals, and brutal matches.</p>
-
-        <h3>CHAPTER 1: ROOKIE</h3>
-        <p>Prove yourself in the minor leagues. Win 3 matches to earn a CCW contract.</p>
-
-        <h3>CHAPTER 2: RISING STAR</h3>
-        <p>Your first rivalry begins. A veteran doesn't like the new competition.</p>
-
-        <h3>CHAPTER 3: BETRAYAL</h3>
-        <p>Your ally turns enemy. Settle the score in a hardcore match.</p>
-
-        <h3>CHAPTER 4: CONTENDER</h3>
-        <p>Fight through a tournament for a title shot at the PPV.</p>
-
-        <h3>CHAPTER 5: CHAMPIONSHIP</h3>
-        <p>Main event of CARNAGE CLASH. Win the CCW Championship!</p>
+        <p>Rise from unknown rookie to CCW Champion in a 5-chapter storyline.</p>
+        <h3>CHAPTER 1: ROOKIE</h3><p>Win 3 matches to earn a CCW contract.</p>
+        <h3>CHAPTER 2: RISING STAR</h3><p>Your first rivalry begins.</p>
+        <h3>CHAPTER 3: BETRAYAL</h3><p>Your ally turns enemy.</p>
+        <h3>CHAPTER 4: CONTENDER</h3><p>Fight through a tournament for a title shot.</p>
+        <h3>CHAPTER 5: CHAMPIONSHIP</h3><p>Main event of CARNAGE CLASH!</p>
       </div>
     </div>
   </div>
 
   <script>
+    // Global touch input state for Phaser to read
+    window.mobileInput = {
+      up: false,
+      down: false,
+      left: false,
+      right: false,
+      attack: false,
+      grapple: false,
+      pickup: false,
+      slam: false
+    };
+
     function openModal(type) {
       document.getElementById('modal-' + type).classList.add('active');
     }
@@ -675,6 +715,70 @@
       if (e.key === 'Escape') {
         document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
       }
+    });
+
+    // D-Pad touch handling
+    document.querySelectorAll('.dpad-btn').forEach(btn => {
+      const dir = btn.dataset.dir;
+
+      btn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        window.mobileInput[dir] = true;
+        btn.classList.add('active');
+      }, { passive: false });
+
+      btn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        window.mobileInput[dir] = false;
+        btn.classList.remove('active');
+      }, { passive: false });
+
+      btn.addEventListener('touchcancel', (e) => {
+        window.mobileInput[dir] = false;
+        btn.classList.remove('active');
+      });
+    });
+
+    // Action button touch handling
+    document.querySelectorAll('.action-btn').forEach(btn => {
+      const action = btn.dataset.action;
+
+      btn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        window.mobileInput[action] = true;
+        btn.classList.add('active');
+      }, { passive: false });
+
+      btn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        window.mobileInput[action] = false;
+        btn.classList.remove('active');
+      }, { passive: false });
+
+      btn.addEventListener('touchcancel', (e) => {
+        window.mobileInput[action] = false;
+        btn.classList.remove('active');
+      });
+    });
+
+    // Handle game container for mobile
+    function setupMobileContainer() {
+      const isMobile = window.innerWidth <= 900;
+      const isLandscape = window.innerWidth > window.innerHeight;
+
+      if (isMobile && isLandscape) {
+        // Move game to mobile container if needed
+        const gameCanvas = document.querySelector('#game-container canvas');
+        const mobileContainer = document.getElementById('game-container-mobile');
+        if (gameCanvas && mobileContainer && !mobileContainer.contains(gameCanvas)) {
+          mobileContainer.appendChild(gameCanvas);
+        }
+      }
+    }
+
+    window.addEventListener('resize', setupMobileContainer);
+    window.addEventListener('orientationchange', () => {
+      setTimeout(setupMobileContainer, 100);
     });
   </script>
 
