@@ -506,47 +506,64 @@
         background: #000;
       }
 
-      .cabinet-wrapper {
-        display: none;
-      }
+      /* Hide cabinet decorations, show only game */
+      .marquee { display: none !important; }
+      .bottom-bar { display: none !important; }
+      .side-panel { display: none !important; }
 
-      .mobile-game-wrapper {
-        display: flex !important;
+      .cabinet-wrapper {
         width: 100%;
         height: 100%;
-        align-items: center;
-        justify-content: center;
+      }
+
+      .screen-cabinet {
+        width: 100% !important;
+        height: 100%;
+        padding: 0;
+        border: none;
+        background: #000;
+      }
+
+      .screen-bezel {
+        width: 100%;
+        height: 100%;
+        border: none;
+        border-radius: 0;
+      }
+
+      .screen-bezel::before {
+        display: none; /* Hide scanlines on mobile */
       }
 
       #game-container {
-        width: auto;
-        height: 100vh;
-        aspect-ratio: 16/9;
-        max-width: 100vw;
+        width: 100%;
+        height: 100%;
+      }
+
+      #game-container canvas {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: contain;
       }
 
       .mobile-controls {
         display: block !important;
       }
-
-      .side-panel { display: none !important; }
     }
 
     /* Portrait - show rotate message */
     @media (max-width: 900px) and (orientation: portrait) {
       .cabinet-wrapper { display: none; }
-      .mobile-game-wrapper { display: none !important; }
       .rotate-prompt { display: flex !important; }
     }
 
-    /* Desktop/Tablet Landscape - normal cabinet */
+    /* Desktop - normal cabinet */
     @media (min-width: 901px) {
-      .mobile-game-wrapper { display: none !important; }
       .mobile-controls { display: none !important; }
       .rotate-prompt { display: none !important; }
     }
 
-    /* Tablet adjustments */
+    /* Tablet touch controls */
     @media (max-width: 900px) and (min-width: 501px) and (orientation: landscape) {
       .dpad-zone { width: 120px; height: 120px; }
       .dpad-btn { width: 42px; height: 42px; font-size: 20px; }
@@ -554,18 +571,12 @@
       .action-btn { width: 48px; height: 48px; font-size: 7px; }
     }
 
-    /* Small mobile */
+    /* Small mobile touch controls */
     @media (max-width: 500px) and (orientation: landscape) {
       .dpad-zone { width: 100px; height: 100px; left: 5px; bottom: 10px; }
       .dpad-btn { width: 35px; height: 35px; font-size: 16px; }
       .action-zone { width: 110px; height: 110px; right: 5px; bottom: 10px; }
       .action-btn { width: 42px; height: 42px; font-size: 6px; }
-    }
-
-    .mobile-game-wrapper {
-      display: none;
-      width: 100%;
-      height: 100%;
     }
   </style>
 </head>
@@ -620,11 +631,6 @@
         </div>
       </div>
     </div>
-  </div>
-
-  <!-- MOBILE GAME VIEW (landscape only) -->
-  <div class="mobile-game-wrapper">
-    <div id="game-container-mobile"></div>
   </div>
 
   <!-- MOBILE TOUCH CONTROLS -->
@@ -762,25 +768,6 @@
       });
     });
 
-    // Handle game container for mobile
-    function setupMobileContainer() {
-      const isMobile = window.innerWidth <= 900;
-      const isLandscape = window.innerWidth > window.innerHeight;
-
-      if (isMobile && isLandscape) {
-        // Move game to mobile container if needed
-        const gameCanvas = document.querySelector('#game-container canvas');
-        const mobileContainer = document.getElementById('game-container-mobile');
-        if (gameCanvas && mobileContainer && !mobileContainer.contains(gameCanvas)) {
-          mobileContainer.appendChild(gameCanvas);
-        }
-      }
-    }
-
-    window.addEventListener('resize', setupMobileContainer);
-    window.addEventListener('orientationchange', () => {
-      setTimeout(setupMobileContainer, 100);
-    });
   </script>
 
   <script type="module" src="/src/main.js"></script>
