@@ -1078,9 +1078,6 @@ export default class FightScene extends Phaser.Scene {
       this.replayManager.update();
     }
 
-    // Get mobile input from global window.mobileInput (set by HTML touch controls)
-    const mobile = window.mobileInput || { justPressed: () => false };
-
     // Create combined input that merges keyboard and mobile touch
     const combinedCursors = {
       up: { isDown: this.cursors.up.isDown || mobile.up },
