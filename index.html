@@ -762,26 +762,49 @@
   </div>
 
   <script>
-    // iOS Audio Fix - resume audio context on first user interaction
+    // iOS Audio Fix - resume audio context on user interaction
+    // Must be called repeatedly since game may not be loaded on first touch
+    let audioUnlocked = false;
     function unlockAudio() {
+      // Try to unlock Phaser's audio context
       if (window.game && window.game.sound && window.game.sound.context) {
-        if (window.game.sound.context.state === 'suspended') {
-          window.game.sound.context.resume();
+        const ctx = window.game.sound.context;
+        if (ctx.state === 'suspended') {
+          ctx.resume().then(() => {
+            console.log('Audio context resumed');
+            audioUnlocked = true;
+          }).catch(e => console.log('Audio resume failed:', e));
+        } else if (ctx.state === 'running') {
+          audioUnlocked = true;
         }
       }
-      // Also try to unlock any AudioContext
-      if (window.AudioContext || window.webkitAudioContext) {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        ctx.resume().then(() => ctx.close());
-      }
-      // Remove listeners after first interaction
-      document.removeEventListener('touchstart', unlockAudio);
-      document.removeEventListener('touchend', unlockAudio);
-      document.removeEventListener('click', unlockAudio);
     }
-    document.addEventListener('touchstart', unlockAudio, { once: true });
-    document.addEventListener('touchend', unlockAudio, { once: true });
-    document.addEventListener('click', unlockAudio, { once: true });
+
+    // Try to unlock on any user interaction
+    function onUserInteraction() {
+      unlockAudio();
+      // Keep trying until audio is unlocked
+      if (audioUnlocked) {
+        document.removeEventListener('touchstart', onUserInteraction);
+        document.removeEventListener('touchend', onUserInteraction);
+        document.removeEventListener('click', onUserInteraction);
+        document.removeEventListener('keydown', onUserInteraction);
+      }
+    }
+
+    document.addEventListener('touchstart', onUserInteraction);
+    document.addEventListener('touchend', onUserInteraction);
+    document.addEventListener('click', onUserInteraction);
+    document.addEventListener('keydown', onUserInteraction);
+
+    // Also try periodically in case game loads late
+    const audioCheckInterval = setInterval(() => {
+      if (audioUnlocked) {
+        clearInterval(audioCheckInterval);
+      } else {
+        unlockAudio();
+      }
+    }, 500);
 
     // Global touch input state for Phaser to read
     window.mobileInput = {
