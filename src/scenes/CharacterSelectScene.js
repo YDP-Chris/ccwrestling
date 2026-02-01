@@ -259,25 +259,32 @@ export default class CharacterSelectScene extends Phaser.Scene {
   }
 
   update() {
+    // Get mobile input
+    const mobile = window.mobileInput || { justPressed: () => false };
+
     // Navigate left
     if (Phaser.Input.Keyboard.JustDown(this.leftKey) ||
-        Phaser.Input.Keyboard.JustDown(this.aKey)) {
+        Phaser.Input.Keyboard.JustDown(this.aKey) ||
+        mobile.justPressed('left')) {
       this.navigate(-1);
     }
 
     // Navigate right
     if (Phaser.Input.Keyboard.JustDown(this.rightKey) ||
-        Phaser.Input.Keyboard.JustDown(this.dKey)) {
+        Phaser.Input.Keyboard.JustDown(this.dKey) ||
+        mobile.justPressed('right')) {
       this.navigate(1);
     }
 
-    // Confirm selection
-    if (Phaser.Input.Keyboard.JustDown(this.enterKey)) {
+    // Confirm selection (attack button)
+    if (Phaser.Input.Keyboard.JustDown(this.enterKey) ||
+        mobile.justPressed('attack')) {
       this.confirmSelection();
     }
 
-    // Go back
-    if (Phaser.Input.Keyboard.JustDown(this.escKey)) {
+    // Go back (grapple button)
+    if (Phaser.Input.Keyboard.JustDown(this.escKey) ||
+        mobile.justPressed('grapple')) {
       this.goBack();
     }
 

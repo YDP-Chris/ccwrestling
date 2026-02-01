@@ -437,19 +437,25 @@ export default class GameOverScene extends Phaser.Scene {
   update() {
     if (this.hasSelected) return;
 
+    // Get mobile input
+    const mobile = window.mobileInput || { justPressed: () => false };
+
     // Navigation
-    if (Phaser.Input.Keyboard.JustDown(this.upKey) || Phaser.Input.Keyboard.JustDown(this.wKey)) {
+    if (Phaser.Input.Keyboard.JustDown(this.upKey) || Phaser.Input.Keyboard.JustDown(this.wKey) ||
+        mobile.justPressed('up')) {
       this.selectedOption = Math.max(0, this.selectedOption - 1);
       this.updateSelection();
     }
 
-    if (Phaser.Input.Keyboard.JustDown(this.downKey) || Phaser.Input.Keyboard.JustDown(this.sKey)) {
+    if (Phaser.Input.Keyboard.JustDown(this.downKey) || Phaser.Input.Keyboard.JustDown(this.sKey) ||
+        mobile.justPressed('down')) {
       this.selectedOption = Math.min(this.options.length - 1, this.selectedOption + 1);
       this.updateSelection();
     }
 
-    // Selection with Enter or Space
-    if (Phaser.Input.Keyboard.JustDown(this.enterKey) || Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
+    // Selection with Enter, Space, or Attack button
+    if (Phaser.Input.Keyboard.JustDown(this.enterKey) || Phaser.Input.Keyboard.JustDown(this.spaceKey) ||
+        mobile.justPressed('attack')) {
       this.selectOption();
     }
   }

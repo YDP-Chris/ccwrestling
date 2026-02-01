@@ -193,21 +193,27 @@ export default class MenuScene extends Phaser.Scene {
   update() {
     if (this.hasStarted) return;
 
+    // Get mobile input
+    const mobile = window.mobileInput || { justPressed: () => false };
+
     // Navigate up
     if (Phaser.Input.Keyboard.JustDown(this.upKey) ||
-        Phaser.Input.Keyboard.JustDown(this.wKey)) {
+        Phaser.Input.Keyboard.JustDown(this.wKey) ||
+        mobile.justPressed('up')) {
       this.navigate(-1);
     }
 
     // Navigate down
     if (Phaser.Input.Keyboard.JustDown(this.downKey) ||
-        Phaser.Input.Keyboard.JustDown(this.sKey)) {
+        Phaser.Input.Keyboard.JustDown(this.sKey) ||
+        mobile.justPressed('down')) {
       this.navigate(1);
     }
 
-    // Select
+    // Select (attack button acts as confirm on menus)
     if (Phaser.Input.Keyboard.JustDown(this.enterKey) ||
-        Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
+        Phaser.Input.Keyboard.JustDown(this.spaceKey) ||
+        mobile.justPressed('attack')) {
       this.selectMode();
     }
   }

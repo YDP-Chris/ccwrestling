@@ -380,6 +380,24 @@ export default class CareerMenuScene extends Phaser.Scene {
     });
   }
 
+  update() {
+    // Mobile input support
+    const mobile = window.mobileInput || { justPressed: () => false };
+
+    if (mobile.justPressed('up')) {
+      this.navigate(-1);
+    }
+    if (mobile.justPressed('down')) {
+      this.navigate(1);
+    }
+    if (mobile.justPressed('attack')) {
+      this.selectOption();
+    }
+    if (mobile.justPressed('grapple')) {
+      this.goBack();
+    }
+  }
+
   goBack() {
     TransitionManager.fadeToScene(this, 'MenuScene');
   }

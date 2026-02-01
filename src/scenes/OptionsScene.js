@@ -280,33 +280,42 @@ export default class OptionsScene extends Phaser.Scene {
   }
 
   update() {
+    // Get mobile input
+    const mobile = window.mobileInput || { justPressed: () => false };
+
     // Navigate
     if (Phaser.Input.Keyboard.JustDown(this.upKey) ||
-        Phaser.Input.Keyboard.JustDown(this.wKey)) {
+        Phaser.Input.Keyboard.JustDown(this.wKey) ||
+        mobile.justPressed('up')) {
       this.navigate(-1);
     }
     if (Phaser.Input.Keyboard.JustDown(this.downKey) ||
-        Phaser.Input.Keyboard.JustDown(this.sKey)) {
+        Phaser.Input.Keyboard.JustDown(this.sKey) ||
+        mobile.justPressed('down')) {
       this.navigate(1);
     }
 
     // Adjust value
     if (Phaser.Input.Keyboard.JustDown(this.leftKey) ||
-        Phaser.Input.Keyboard.JustDown(this.aKey)) {
+        Phaser.Input.Keyboard.JustDown(this.aKey) ||
+        mobile.justPressed('left')) {
       this.adjustValue(-1);
     }
     if (Phaser.Input.Keyboard.JustDown(this.rightKey) ||
-        Phaser.Input.Keyboard.JustDown(this.dKey)) {
+        Phaser.Input.Keyboard.JustDown(this.dKey) ||
+        mobile.justPressed('right')) {
       this.adjustValue(1);
     }
 
-    // Confirm (for buttons)
-    if (Phaser.Input.Keyboard.JustDown(this.enterKey)) {
+    // Confirm (for buttons) - attack button
+    if (Phaser.Input.Keyboard.JustDown(this.enterKey) ||
+        mobile.justPressed('attack')) {
       this.confirmSelection();
     }
 
-    // Save and exit
-    if (Phaser.Input.Keyboard.JustDown(this.escKey)) {
+    // Save and exit - grapple button
+    if (Phaser.Input.Keyboard.JustDown(this.escKey) ||
+        mobile.justPressed('grapple')) {
       this.saveAndExit();
     }
   }
