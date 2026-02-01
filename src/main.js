@@ -30,7 +30,10 @@ const config = {
   pixelArt: true,
   roundPixels: true,
   input: {
-    keyboard: true
+    keyboard: true,
+    touch: {
+      capture: false  // Don't capture touch events globally, let HTML controls work
+    }
   }
 };
 

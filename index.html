@@ -24,7 +24,6 @@
     html, body {
       height: 100%;
       overflow: hidden;
-      touch-action: none;
     }
 
     body {
@@ -424,6 +423,8 @@
       font-size: 24px;
       color: rgba(255,255,255,0.6);
       transition: background 0.1s;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
 
     .dpad-btn.active {
@@ -458,6 +459,8 @@
       border: 3px solid;
       transition: transform 0.1s;
       text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
 
     .action-btn.active {
@@ -724,48 +727,54 @@
       }
     });
 
-    // D-Pad touch handling
-    document.querySelectorAll('.dpad-btn').forEach(btn => {
-      const dir = btn.dataset.dir;
-
+    // Helper to setup button input handling (touch + mouse)
+    function setupButton(btn, key) {
+      // Touch events
       btn.addEventListener('touchstart', (e) => {
         e.preventDefault();
-        window.mobileInput[dir] = true;
+        e.stopPropagation();
+        window.mobileInput[key] = true;
         btn.classList.add('active');
       }, { passive: false });
 
       btn.addEventListener('touchend', (e) => {
         e.preventDefault();
-        window.mobileInput[dir] = false;
+        e.stopPropagation();
+        window.mobileInput[key] = false;
         btn.classList.remove('active');
       }, { passive: false });
 
-      btn.addEventListener('touchcancel', (e) => {
-        window.mobileInput[dir] = false;
+      btn.addEventListener('touchcancel', () => {
+        window.mobileInput[key] = false;
         btn.classList.remove('active');
       });
+
+      // Mouse events (for testing on desktop)
+      btn.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        window.mobileInput[key] = true;
+        btn.classList.add('active');
+      });
+
+      btn.addEventListener('mouseup', () => {
+        window.mobileInput[key] = false;
+        btn.classList.remove('active');
+      });
+
+      btn.addEventListener('mouseleave', () => {
+        window.mobileInput[key] = false;
+        btn.classList.remove('active');
+      });
+    }
+
+    // D-Pad buttons
+    document.querySelectorAll('.dpad-btn').forEach(btn => {
+      setupButton(btn, btn.dataset.dir);
     });
 
-    // Action button touch handling
+    // Action buttons
     document.querySelectorAll('.action-btn').forEach(btn => {
-      const action = btn.dataset.action;
-
-      btn.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        window.mobileInput[action] = true;
-        btn.classList.add('active');
-      }, { passive: false });
-
-      btn.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        window.mobileInput[action] = false;
-        btn.classList.remove('active');
-      }, { passive: false });
-
-      btn.addEventListener('touchcancel', (e) => {
-        window.mobileInput[action] = false;
-        btn.classList.remove('active');
-      });
+      setupButton(btn, btn.dataset.action);
     });
 
   </script>
