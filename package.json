@@ -1,0 +1,26 @@
+{
+  "name": "ccw-game",
+  "version": "1.0.0",
+  "description": "CCW: Carnage Championship Wrestling - A browser-based 2D extreme wrestling game",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:e2e": "set NODE_OPTIONS=--max-old-space-size=4096 && npx playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed"
+  },
+  "dependencies": {
+    "phaser": "^3.80.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.1",
+    "@vitest/ui": "^4.0.18",
+    "vite": "^5.4.2",
+    "vitest": "^4.0.18"
+  }
+}

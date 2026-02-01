@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CCW: Carnage Championship Wrestling</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      background: linear-gradient(180deg, #0a0505 0%, #050505 50%, #05050a 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      color: #ccc;
+    }
+
+    /* ============ SIDE PANELS ============ */
+    .side-panel {
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 100px;
+      display: none;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .side-left { left: 15px; }
+    .side-right { right: 15px; }
+
+    .side-panel img {
+      width: 100%;
+      height: auto;
+      opacity: 0.4;
+      border-radius: 6px;
+    }
+
+    .side-right img { transform: scaleX(-1); }
+
+    @media (min-width: 1300px) {
+      .side-panel { display: block; }
+    }
+
+    /* ============ MAIN CABINET ============ */
+    .cabinet-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ============ MARQUEE HEADER ============ */
+    .marquee {
+      width: 836px;
+      height: 240px;
+      background:
+        url('assets/ui/marquee-wide-2.webp') center calc(40% + 25px)/140% auto no-repeat,
+        linear-gradient(180deg, #2a1510 0%, #150a08 50%, #0a0505 100%);
+      border: 4px solid #1a1a1a;
+      border-bottom: none;
+      border-radius: 20px 20px 0 0;
+      position: relative;
+      box-shadow:
+        0 -10px 40px rgba(255,69,0,0.5),
+        0 -5px 20px rgba(255,100,0,0.3),
+        inset 0 2px 10px rgba(255,69,0,0.2);
+      overflow: hidden;
+    }
+
+    /* Inner border glow */
+    .marquee::before {
+      content: '';
+      position: absolute;
+      top: 3px; left: 3px; right: 3px; bottom: 3px;
+      border: 2px solid rgba(255,69,0,0.4);
+      border-radius: 16px 16px 0 0;
+      pointer-events: none;
+      box-shadow: inset 0 0 20px rgba(255,69,0,0.2);
+    }
+
+    /* Animated light strip */
+    .marquee::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg,
+        transparent 0%,
+        #ff4500 15%,
+        #ffcc00 35%,
+        #ffffff 50%,
+        #ffcc00 65%,
+        #ff4500 85%,
+        transparent 100%
+      );
+      animation: lightStrip 2s ease-in-out infinite;
+    }
+
+    @keyframes lightStrip {
+      0%, 100% { opacity: 0.5; filter: brightness(1); }
+      50% { opacity: 1; filter: brightness(1.3); }
+    }
+
+    /* ============ SCREEN AREA ============ */
+    .screen-cabinet {
+      background: linear-gradient(180deg, #151515 0%, #0a0a0a 100%);
+      border: 4px solid #222;
+      border-top: none;
+      border-bottom: none;
+      padding: 12px;
+      box-shadow: inset 0 0 60px rgba(0,0,0,0.9);
+    }
+
+    .screen-bezel {
+      background: #000;
+      border: 4px solid #1a1a1a;
+      border-radius: 8px;
+      padding: 0;
+      box-shadow:
+        inset 0 0 40px rgba(0,0,0,1),
+        0 0 30px rgba(0,0,0,0.9);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* CRT scanlines */
+    .screen-bezel::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(rgba(0,0,0,0) 50%, rgba(0,0,0,0.08) 50%);
+      background-size: 100% 4px;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    /* Screen glow */
+    .screen-bezel::after {
+      content: '';
+      position: absolute;
+      top: -2px; left: -2px; right: -2px; bottom: -2px;
+      border: 2px solid rgba(100,100,120,0.1);
+      border-radius: 10px;
+      pointer-events: none;
+    }
+
+    #game-container {
+      width: 800px;
+      height: 450px;
+      background: #000;
+    }
+
+    canvas { display: block; }
+
+    /* ============ BOTTOM BAR ============ */
+    .bottom-bar {
+      width: 836px;
+      height: 95px;
+      background: url('assets/ui/control-panel-2.webp') center/cover no-repeat;
+      border: 4px solid #222;
+      border-top: 2px solid #333;
+      border-radius: 0 0 16px 16px;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      box-shadow:
+        0 8px 30px rgba(0,0,0,0.8),
+        inset 0 0 30px rgba(0,0,0,0.5);
+      overflow: hidden;
+    }
+
+    /* Darkening overlay for readability */
+    .bottom-bar::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.4);
+      pointer-events: none;
+      border-radius: 0 0 12px 12px;
+    }
+
+    /* Bottom glow strip to match marquee */
+    .bottom-bar::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg,
+        transparent 0%,
+        #ff4500 20%,
+        #ffcc00 50%,
+        #ff4500 80%,
+        transparent 100%
+      );
+      opacity: 0.6;
+    }
+
+    /* Player Controls - simplified text labels */
+    .player-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 1;
+      padding: 8px 15px;
+      background: rgba(0,0,0,0.5);
+      border-radius: 8px;
+      border: 1px solid rgba(255,69,0,0.3);
+    }
+
+    .player-label {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 10px;
+      margin-bottom: 8px;
+      text-shadow: 0 0 10px currentColor, 0 2px 4px rgba(0,0,0,0.8);
+    }
+
+    .player-section.p1 .player-label { color: #00ff00; }
+    .player-section.p2 .player-label { color: #00aaff; }
+
+    .controls-text {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 7px;
+      color: #ff4500;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+      line-height: 1.6;
+      text-align: center;
+    }
+
+    .controls-text .key {
+      display: inline-block;
+      background: rgba(255,255,255,0.1);
+      padding: 2px 5px;
+      border-radius: 3px;
+      border: 1px solid rgba(255,255,255,0.2);
+      margin: 1px;
+    }
+
+    /* Center Section */
+    .center-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      position: relative;
+      z-index: 1;
+      padding: 10px 20px;
+      background: rgba(0,0,0,0.6);
+      border-radius: 10px;
+      border: 2px solid rgba(255,69,0,0.4);
+      box-shadow: 0 0 20px rgba(255,69,0,0.2);
+    }
+
+    .info-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .info-btn {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 7px;
+      padding: 6px 12px;
+      background: linear-gradient(180deg, #ff4500 0%, #cc3300 100%);
+      border: 2px solid #ff6633;
+      border-radius: 4px;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    }
+
+    .info-btn:hover {
+      background: linear-gradient(180deg, #ff6633 0%, #ff4500 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(255,69,0,0.5);
+    }
+
+    .press-start {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 9px;
+      color: #ffcc00;
+      text-shadow: 0 0 12px #ffcc00, 0 2px 4px rgba(0,0,0,0.8);
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .footer-line {
+      font-size: 6px;
+      color: #888;
+    }
+
+    .footer-line a {
+      color: #ff4500;
+      text-decoration: none;
+    }
+
+    .footer-line a:hover {
+      text-decoration: underline;
+    }
+
+    /* ============ MODAL OVERLAY ============ */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.92);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      backdrop-filter: blur(6px);
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: linear-gradient(180deg, #1a1a2a 0%, #0a0a14 100%);
+      border: 3px solid #ff4500;
+      border-radius: 12px;
+      padding: 25px 30px;
+      max-width: 480px;
+      width: 90%;
+      position: relative;
+      box-shadow: 0 0 60px rgba(255,69,0,0.5);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-family: 'Press Start 2P', cursive;
+      font-size: 14px;
+      color: #555;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .modal-close:hover {
+      color: #ff4500;
+    }
+
+    .modal-title {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 13px;
+      color: #ff4500;
+      margin-bottom: 18px;
+      text-shadow: 0 0 12px rgba(255,69,0,0.7);
+    }
+
+    .modal-body {
+      color: #999;
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .modal-body h3 {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 9px;
+      color: #ffcc00;
+      margin: 14px 0 8px;
+    }
+
+    .wrestler-card {
+      padding: 10px;
+      background: rgba(0,0,0,0.4);
+      border-radius: 6px;
+      margin-bottom: 8px;
+      border-left: 3px solid #ff4500;
+    }
+
+    .wrestler-name {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 9px;
+      color: #fff;
+    }
+
+    .wrestler-style {
+      font-size: 10px;
+      color: #777;
+      margin-top: 4px;
+    }
+
+    .match-type {
+      display: inline-block;
+      background: rgba(0,0,0,0.4);
+      padding: 10px 14px;
+      border-radius: 6px;
+      margin: 4px;
+      border: 1px solid #333;
+    }
+
+    .match-type strong {
+      color: #ff4500;
+      display: block;
+      font-size: 10px;
+      margin-bottom: 4px;
+    }
+
+    .match-type span {
+      font-size: 9px;
+      color: #666;
+    }
+
+    /* Responsive - Tablet */
+    @media (max-width: 900px) {
+      .cabinet-wrapper {
+        width: 100%;
+        padding: 0;
+      }
+      .marquee, .screen-cabinet, .bottom-bar {
+        width: 100%;
+        max-width: 100%;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+      }
+      .marquee {
+        height: 120px;
+        background-size: 160% auto;
+      }
+      .screen-cabinet {
+        padding: 8px;
+      }
+      #game-container {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 16/9;
+      }
+      .bottom-bar {
+        height: auto;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: center;
+        padding: 10px;
+        background-size: cover;
+      }
+      .player-section { display: none; }
+      .center-section {
+        width: 100%;
+        padding: 8px 15px;
+      }
+      .info-btn {
+        font-size: 8px;
+        padding: 8px 14px;
+      }
+    }
+
+    /* Responsive - Mobile */
+    @media (max-width: 500px) {
+      body {
+        justify-content: flex-start;
+      }
+      .marquee {
+        height: 80px;
+        background-size: 200% auto;
+        background-position: center calc(40% + 10px);
+      }
+      .screen-cabinet {
+        padding: 4px;
+        border-width: 2px;
+      }
+      .screen-bezel {
+        border-width: 2px;
+        padding: 2px;
+      }
+      .bottom-bar {
+        padding: 8px;
+        border-width: 2px;
+      }
+      .center-section {
+        padding: 6px 10px;
+        gap: 6px;
+      }
+      .info-buttons {
+        gap: 4px;
+      }
+      .info-btn {
+        font-size: 6px;
+        padding: 6px 10px;
+      }
+      .press-start {
+        font-size: 8px;
+      }
+      .footer-line {
+        font-size: 5px;
+      }
+      .modal-content {
+        padding: 15px 20px;
+        max-height: 80vh;
+        overflow-y: auto;
+      }
+      .modal-title {
+        font-size: 11px;
+      }
+      .modal-body {
+        font-size: 11px;
+      }
+      .wrestler-name {
+        font-size: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- SIDE PANEL ART -->
+  <div class="side-panel side-left">
+    <img src="assets/ui/cabinet-side-art.webp" alt="">
+  </div>
+  <div class="side-panel side-right">
+    <img src="assets/ui/cabinet-side-art.webp" alt="">
+  </div>
+
+  <div class="cabinet-wrapper">
+    <!-- MARQUEE - Now uses the cool generated image -->
+    <div class="marquee"></div>
+
+    <!-- GAME SCREEN -->
+    <div class="screen-cabinet">
+      <div class="screen-bezel">
+        <div id="game-container"></div>
+      </div>
+    </div>
+
+    <!-- BOTTOM BAR -->
+    <div class="bottom-bar">
+      <!-- P1 Controls -->
+      <div class="player-section p1">
+        <div class="player-label">PLAYER 1</div>
+        <div class="controls-text">
+          <span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span> MOVE<br>
+          <span class="key">J</span> ATK <span class="key">G</span> GRAPPLE <span class="key">K</span> PICK <span class="key">L</span> SLAM
+        </div>
+      </div>
+
+      <!-- Center -->
+      <div class="center-section">
+        <div class="info-buttons">
+          <button class="info-btn" onclick="openModal('roster')">ROSTER</button>
+          <button class="info-btn" onclick="openModal('matches')">MATCHES</button>
+          <button class="info-btn" onclick="openModal('career')">CAREER</button>
+        </div>
+        <div class="press-start">PRESS START</div>
+        <div class="footer-line">
+          CCW © 2026 | <a href="https://yadkindatapartners.com" target="_blank">Yadkin Data Partners</a>
+        </div>
+      </div>
+
+      <!-- P2 Controls -->
+      <div class="player-section p2">
+        <div class="player-label">PLAYER 2</div>
+        <div class="controls-text">
+          <span class="key">↑</span><span class="key">←</span><span class="key">↓</span><span class="key">→</span> MOVE<br>
+          <span class="key">Z</span> ATK <span class="key">V</span> GRAPPLE <span class="key">X</span> PICK <span class="key">C</span> SLAM
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODALS -->
+  <div class="modal-overlay" id="modal-roster" onclick="closeModal('roster')">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <span class="modal-close" onclick="closeModal('roster')">×</span>
+      <div class="modal-title">THE ROSTER</div>
+      <div class="modal-body">
+        <div class="wrestler-card">
+          <div class="wrestler-name">DUMPSTER DAVE</div>
+          <div class="wrestler-style">Hardcore Legend • Brawler</div>
+        </div>
+        <div class="wrestler-card">
+          <div class="wrestler-name">SCAR</div>
+          <div class="wrestler-style">Death Match King • Technical</div>
+        </div>
+        <div class="wrestler-card">
+          <div class="wrestler-name">BLAZE</div>
+          <div class="wrestler-style">Fire Starter • High Flyer</div>
+        </div>
+        <div class="wrestler-card">
+          <div class="wrestler-name">TANK</div>
+          <div class="wrestler-style">Unstoppable Force • Powerhouse</div>
+        </div>
+        <div class="wrestler-card">
+          <div class="wrestler-name">VIPER</div>
+          <div class="wrestler-style">Snake in the Grass • Technician</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modal-matches" onclick="closeModal('matches')">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <span class="modal-close" onclick="closeModal('matches')">×</span>
+      <div class="modal-title">MATCH TYPES</div>
+      <div class="modal-body">
+        <div class="match-type">
+          <strong>SINGLES</strong>
+          <span>One on one. First to KO wins.</span>
+        </div>
+        <div class="match-type">
+          <strong>HARDCORE</strong>
+          <span>No rules. Chairs and weapons legal.</span>
+        </div>
+        <div class="match-type">
+          <strong>TABLES</strong>
+          <span>Win by putting opponent through a table.</span>
+        </div>
+        <div class="match-type">
+          <strong>INFERNO</strong>
+          <span>Tables can be set on fire. Ultimate destruction.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modal-career" onclick="closeModal('career')">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <span class="modal-close" onclick="closeModal('career')">×</span>
+      <div class="modal-title">CAREER MODE</div>
+      <div class="modal-body">
+        <p>Rise from unknown rookie to CCW Champion in a 5-chapter storyline filled with rivalries, betrayals, and brutal matches.</p>
+
+        <h3>CHAPTER 1: ROOKIE</h3>
+        <p>Prove yourself in the minor leagues. Win 3 matches to earn a CCW contract.</p>
+
+        <h3>CHAPTER 2: RISING STAR</h3>
+        <p>Your first rivalry begins. A veteran doesn't like the new competition.</p>
+
+        <h3>CHAPTER 3: BETRAYAL</h3>
+        <p>Your ally turns enemy. Settle the score in a hardcore match.</p>
+
+        <h3>CHAPTER 4: CONTENDER</h3>
+        <p>Fight through a tournament for a title shot at the PPV.</p>
+
+        <h3>CHAPTER 5: CHAMPIONSHIP</h3>
+        <p>Main event of CARNAGE CLASH. Win the CCW Championship!</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function openModal(type) {
+      document.getElementById('modal-' + type).classList.add('active');
+    }
+
+    function closeModal(type) {
+      document.getElementById('modal-' + type).classList.remove('active');
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
+      }
+    });
+  </script>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

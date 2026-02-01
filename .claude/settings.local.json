@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install)",
+      "Bash(claude mcp add:*)",
+      "mcp__ludo__createImage",
+      "mcp__ludo__animateSprite",
+      "mcp__ludo__createSoundEffect",
+      "mcp__ludo__createMusic",
+      "Bash(powershell:*)",
+      "Bash(npm run dev:*)",
+      "Bash(dir /b \"C:\\\\projects\\\\ccwrestling\\\\public\\\\assets\")",
+      "Bash(curl:*)",
+      "Bash(npm install:*)",
+      "Bash(npx playwright install chromium)",
+      "Bash(npm run test:headed:*)",
+      "Bash(npm test:*)",
+      "Bash(findstr:*)",
+      "WebFetch(domain:storage.googleapis.com)",
+      "Bash(magick identify:*)",
+      "Bash(python -c:*)",
+      "Bash(timeout:*)",
+      "Bash(npx playwright test)",
+      "Bash(npm run build:*)",
+      "Bash(ls:*)",
+      "Bash(npx playwright test:*)",
+      "Bash(npm run test:e2e:headed:*)",
+      "Bash(if not exist \"C:\\\\projects\\\\ccwrestling\\\\assets\\\\ui\" mkdir \"C:\\\\projects\\\\ccwrestling\\\\assets\\\\ui\")",
+      "Bash(git init:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}

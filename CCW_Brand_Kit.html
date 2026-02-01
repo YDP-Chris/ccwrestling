@@ -1,0 +1,1561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCW: Carnage Championship Wrestling — Brand Identity Kit</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Blood Tones */
+            --blood-deep: #6B0F1A;
+            --blood-primary: #8B0000;
+            --blood-bright: #DC143C;
+            
+            /* Fire Tones */
+            --fire-orange: #FF4500;
+            --fire-amber: #FFB800;
+            --fire-yellow: #FFD700;
+            
+            /* Industrial Steel */
+            --void: #0D0D0D;
+            --abyss: #1A1A1A;
+            --steel-dark: #2D2D2D;
+            --steel-mid: #4A4A4A;
+            --steel-light: #808080;
+            --chrome: #C0C0C0;
+            
+            /* Typography */
+            --font-display: 'Bebas Neue', sans-serif;
+            --font-heading: 'Oswald', sans-serif;
+            --font-pixel: 'Press Start 2P', monospace;
+            --font-body: 'Inter', system-ui, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--void);
+            color: var(--chrome);
+            line-height: 1.6;
+        }
+
+        /* Noise Texture Overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            opacity: 0.03;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        /* Page Structure */
+        .page {
+            min-height: 100vh;
+            padding: 4rem 3rem;
+            position: relative;
+        }
+
+        .page-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Cover Page */
+        .cover {
+            background: linear-gradient(135deg, var(--void) 0%, var(--blood-deep) 50%, var(--void) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cover::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 800px;
+            height: 800px;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle, rgba(220,20,60,0.15) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.3; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.5; }
+        }
+
+        /* Scanline effect */
+        .cover::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0,0,0,0.1) 2px,
+                rgba(0,0,0,0.1) 4px
+            );
+            pointer-events: none;
+        }
+
+        .cover-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .cover-logo {
+            font-family: var(--font-display);
+            font-size: 12rem;
+            font-weight: 400;
+            letter-spacing: 0.05em;
+            line-height: 0.9;
+            background: linear-gradient(180deg, var(--blood-bright) 0%, var(--blood-deep) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 60px rgba(220,20,60,0.5);
+            animation: glowPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes glowPulse {
+            0%, 100% { filter: drop-shadow(0 0 20px rgba(220,20,60,0.3)); }
+            50% { filter: drop-shadow(0 0 40px rgba(220,20,60,0.6)); }
+        }
+
+        .cover-subtitle {
+            font-family: var(--font-heading);
+            font-size: 1.5rem;
+            font-weight: 500;
+            letter-spacing: 0.4em;
+            color: var(--chrome);
+            margin-top: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        .cover-tagline {
+            font-family: var(--font-pixel);
+            font-size: 0.7rem;
+            color: var(--fire-orange);
+            margin-top: 2rem;
+            letter-spacing: 0.1em;
+        }
+
+        .cover-fire-line {
+            width: 200px;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, var(--fire-orange), var(--fire-yellow), var(--fire-orange), transparent);
+            margin: 2rem auto;
+            animation: fireLine 2s linear infinite;
+        }
+
+        @keyframes fireLine {
+            0% { background-position: -200px 0; }
+            100% { background-position: 200px 0; }
+        }
+
+        .cover-date {
+            font-size: 0.85rem;
+            color: var(--steel-mid);
+            margin-top: 3rem;
+            letter-spacing: 0.15em;
+        }
+
+        /* Section Headers */
+        .section-header {
+            margin-bottom: 3rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--steel-dark);
+        }
+
+        .section-number {
+            font-family: var(--font-pixel);
+            font-size: 0.6rem;
+            color: var(--fire-orange);
+            letter-spacing: 0.2em;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-title {
+            font-family: var(--font-display);
+            font-size: 3.5rem;
+            color: var(--chrome);
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+        }
+
+        .section-subtitle {
+            font-size: 1rem;
+            color: var(--steel-light);
+            margin-top: 0.5rem;
+            max-width: 600px;
+        }
+
+        /* Page Divider */
+        .page-divider {
+            height: 4px;
+            background: linear-gradient(90deg, var(--blood-deep), var(--blood-bright), var(--fire-orange), var(--fire-amber), var(--fire-orange), var(--blood-bright), var(--blood-deep));
+        }
+
+        /* Logo Section */
+        .logo-section {
+            background: var(--abyss);
+        }
+
+        .logo-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .logo-card {
+            background: var(--steel-dark);
+            border-radius: 8px;
+            padding: 2.5rem;
+            border: 1px solid var(--steel-mid);
+            transition: all 0.3s ease;
+        }
+
+        .logo-card:hover {
+            border-color: var(--blood-bright);
+            box-shadow: 0 0 30px rgba(220,20,60,0.2);
+        }
+
+        .logo-card.primary {
+            grid-column: span 2;
+            text-align: center;
+            padding: 4rem;
+            background: linear-gradient(135deg, var(--steel-dark) 0%, var(--abyss) 100%);
+        }
+
+        .logo-card h3 {
+            font-family: var(--font-heading);
+            font-size: 0.85rem;
+            color: var(--fire-orange);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 1.5rem;
+        }
+
+        .logo-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 120px;
+        }
+
+        .logo-display.dark {
+            background: var(--void);
+            border-radius: 8px;
+            padding: 2rem;
+        }
+
+        /* Primary Logo SVG */
+        .primary-logo-container {
+            text-align: center;
+        }
+
+        .primary-logo-text {
+            font-family: var(--font-display);
+            font-size: 8rem;
+            background: linear-gradient(180deg, var(--blood-bright) 0%, var(--blood-deep) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 0.05em;
+            line-height: 1;
+        }
+
+        .primary-logo-subtext {
+            font-family: var(--font-heading);
+            font-size: 0.9rem;
+            letter-spacing: 0.5em;
+            color: var(--chrome);
+            margin-top: 0.5rem;
+        }
+
+        .primary-logo-line {
+            width: 100%;
+            max-width: 300px;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--fire-orange), var(--fire-yellow), var(--fire-orange), transparent);
+            margin: 1rem auto 0;
+        }
+
+        /* Icon Logo */
+        .icon-logo {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, var(--blood-deep) 0%, var(--blood-bright) 100%);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-display);
+            font-size: 3rem;
+            color: white;
+            letter-spacing: 0.05em;
+            box-shadow: 0 8px 32px rgba(139,0,0,0.4);
+        }
+
+        /* Pixel Logo */
+        .pixel-logo {
+            font-family: var(--font-pixel);
+            font-size: 2rem;
+            color: var(--blood-bright);
+            text-shadow: 
+                4px 0 0 var(--blood-deep),
+                -4px 0 0 var(--blood-deep),
+                0 4px 0 var(--blood-deep),
+                0 -4px 0 var(--blood-deep);
+        }
+
+        /* Badge Logo */
+        .badge-logo {
+            width: 140px;
+            height: 160px;
+            position: relative;
+        }
+
+        .badge-logo svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Color Palette Section */
+        .color-section {
+            background: var(--void);
+        }
+
+        .color-category {
+            margin-bottom: 3rem;
+        }
+
+        .color-category h3 {
+            font-family: var(--font-heading);
+            font-size: 1.2rem;
+            color: var(--chrome);
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 1rem;
+        }
+
+        .color-card {
+            background: var(--steel-dark);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--steel-mid);
+        }
+
+        .color-swatch {
+            height: 80px;
+            display: flex;
+            align-items: flex-end;
+            padding: 0.5rem;
+        }
+
+        .color-swatch span {
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            background: rgba(0,0,0,0.5);
+            color: white;
+        }
+
+        .color-info {
+            padding: 0.75rem;
+        }
+
+        .color-name {
+            font-family: var(--font-heading);
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--chrome);
+            margin-bottom: 0.25rem;
+        }
+
+        .color-codes {
+            font-size: 0.7rem;
+            color: var(--steel-light);
+            line-height: 1.6;
+            font-family: monospace;
+        }
+
+        /* Typography Section */
+        .type-section {
+            background: var(--abyss);
+        }
+
+        .type-showcase {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .type-card {
+            background: var(--steel-dark);
+            padding: 2rem;
+            border-radius: 8px;
+            border: 1px solid var(--steel-mid);
+        }
+
+        .type-card h3 {
+            font-family: var(--font-heading);
+            font-size: 0.75rem;
+            color: var(--fire-orange);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 1rem;
+        }
+
+        .type-sample-display {
+            font-family: var(--font-display);
+            font-size: 4rem;
+            color: var(--chrome);
+            line-height: 1;
+            margin-bottom: 1rem;
+        }
+
+        .type-sample-heading {
+            font-family: var(--font-heading);
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: var(--chrome);
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+
+        .type-sample-pixel {
+            font-family: var(--font-pixel);
+            font-size: 1rem;
+            color: var(--fire-orange);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .type-sample-body {
+            font-family: var(--font-body);
+            font-size: 1rem;
+            color: var(--chrome);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .type-name {
+            font-weight: 600;
+            color: var(--chrome);
+            margin-bottom: 0.25rem;
+        }
+
+        .type-details {
+            font-size: 0.85rem;
+            color: var(--steel-light);
+            line-height: 1.6;
+        }
+
+        /* Voice & Messaging */
+        .voice-section {
+            background: var(--void);
+        }
+
+        .tagline-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .tagline-card {
+            background: var(--steel-dark);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--steel-mid);
+            transition: all 0.3s ease;
+        }
+
+        .tagline-card:hover {
+            border-color: var(--blood-bright);
+            transform: translateY(-2px);
+        }
+
+        .tagline-card.featured {
+            grid-column: span 2;
+            background: linear-gradient(135deg, var(--blood-deep) 0%, var(--blood-primary) 100%);
+            border-color: var(--blood-bright);
+            text-align: center;
+            padding: 2.5rem;
+        }
+
+        .tagline-text {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            color: var(--chrome);
+            letter-spacing: 0.05em;
+        }
+
+        .tagline-card.featured .tagline-text {
+            font-size: 2.5rem;
+            color: white;
+        }
+
+        .tagline-use {
+            font-size: 0.7rem;
+            color: var(--fire-orange);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-top: 0.75rem;
+        }
+
+        .tagline-card.featured .tagline-use {
+            color: var(--fire-amber);
+        }
+
+        .voice-guidelines {
+            background: var(--steel-dark);
+            padding: 2rem;
+            border-radius: 8px;
+            border: 1px solid var(--steel-mid);
+        }
+
+        .voice-guidelines h3 {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            color: var(--chrome);
+            margin-bottom: 1.5rem;
+        }
+
+        .voice-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+        }
+
+        .voice-item h4 {
+            font-family: var(--font-heading);
+            font-weight: 600;
+            color: var(--fire-orange);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .voice-item p {
+            font-size: 0.85rem;
+            color: var(--steel-light);
+            line-height: 1.5;
+        }
+
+        /* Trading Cards Section */
+        .cards-section {
+            background: linear-gradient(180deg, var(--abyss) 0%, var(--void) 100%);
+        }
+
+        .cards-intro {
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto 3rem;
+        }
+
+        .cards-intro p {
+            color: var(--steel-light);
+            font-size: 1.1rem;
+            line-height: 1.7;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 3rem;
+            justify-items: center;
+        }
+
+        /* Trading Card Styles */
+        .trading-card {
+            width: 280px;
+            height: 400px;
+            background: linear-gradient(135deg, var(--steel-dark) 0%, var(--abyss) 100%);
+            border-radius: 16px;
+            padding: 8px;
+            position: relative;
+            box-shadow: 
+                0 20px 60px rgba(0,0,0,0.5),
+                0 0 0 1px var(--steel-mid),
+                inset 0 1px 0 rgba(255,255,255,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .trading-card:hover {
+            transform: translateY(-10px) rotateX(5deg);
+            box-shadow: 
+                0 30px 80px rgba(0,0,0,0.6),
+                0 0 0 1px var(--blood-bright),
+                0 0 40px rgba(220,20,60,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+
+        .trading-card.legendary {
+            background: linear-gradient(135deg, var(--blood-deep) 0%, var(--steel-dark) 50%, var(--blood-deep) 100%);
+            animation: legendaryShine 3s linear infinite;
+        }
+
+        @keyframes legendaryShine {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+
+        .trading-card.legendary::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--blood-bright), var(--fire-orange), var(--fire-amber), var(--fire-orange), var(--blood-bright));
+            background-size: 400% 400%;
+            border-radius: 18px;
+            z-index: -1;
+            animation: holoShift 4s ease infinite;
+        }
+
+        @keyframes holoShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .card-inner {
+            background: var(--void);
+            border-radius: 12px;
+            height: 100%;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .card-header {
+            background: linear-gradient(180deg, rgba(220,20,60,0.3) 0%, transparent 100%);
+            padding: 1rem;
+            text-align: center;
+            border-bottom: 1px solid var(--steel-dark);
+        }
+
+        .card-rarity {
+            font-family: var(--font-pixel);
+            font-size: 0.5rem;
+            color: var(--fire-amber);
+            letter-spacing: 0.1em;
+            margin-bottom: 0.25rem;
+        }
+
+        .card-name {
+            font-family: var(--font-display);
+            font-size: 1.8rem;
+            color: white;
+            letter-spacing: 0.05em;
+        }
+
+        .card-type {
+            font-family: var(--font-heading);
+            font-size: 0.65rem;
+            color: var(--steel-light);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+        }
+
+        .card-image {
+            height: 140px;
+            background: linear-gradient(180deg, var(--steel-dark) 0%, var(--abyss) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-image::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0,0,0,0.2) 2px,
+                rgba(0,0,0,0.2) 4px
+            );
+        }
+
+        .card-silhouette {
+            font-size: 4rem;
+            opacity: 0.8;
+        }
+
+        .card-stats {
+            padding: 0.75rem;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.5rem;
+            background: rgba(0,0,0,0.3);
+        }
+
+        .stat-block {
+            text-align: center;
+            padding: 0.5rem 0.25rem;
+            background: var(--steel-dark);
+            border-radius: 4px;
+            border: 1px solid var(--steel-mid);
+        }
+
+        .stat-label {
+            font-family: var(--font-pixel);
+            font-size: 0.4rem;
+            color: var(--fire-orange);
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-value {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .card-bio {
+            padding: 0.75rem;
+            text-align: center;
+        }
+
+        .card-bio p {
+            font-size: 0.75rem;
+            color: var(--steel-light);
+            font-style: italic;
+            line-height: 1.4;
+        }
+
+        .card-footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 0.5rem;
+            background: linear-gradient(0deg, var(--void) 0%, transparent 100%);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-logo {
+            font-family: var(--font-display);
+            font-size: 0.8rem;
+            color: var(--blood-bright);
+        }
+
+        .card-number {
+            font-family: var(--font-pixel);
+            font-size: 0.4rem;
+            color: var(--steel-mid);
+        }
+
+        /* Applications Section */
+        .apps-section {
+            background: var(--abyss);
+        }
+
+        .mockup-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+
+        .mockup-card {
+            background: var(--steel-dark);
+            border-radius: 8px;
+            padding: 1.5rem;
+            border: 1px solid var(--steel-mid);
+        }
+
+        .mockup-card.wide {
+            grid-column: span 2;
+        }
+
+        .mockup-card h4 {
+            font-family: var(--font-heading);
+            font-size: 0.75rem;
+            color: var(--fire-orange);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 1rem;
+        }
+
+        /* Social Banner Mockup */
+        .social-banner {
+            width: 100%;
+            height: 120px;
+            background: linear-gradient(135deg, var(--void) 0%, var(--blood-deep) 50%, var(--void) 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .social-banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0,0,0,0.1) 2px,
+                rgba(0,0,0,0.1) 4px
+            );
+        }
+
+        .social-banner-content {
+            text-align: center;
+            z-index: 1;
+        }
+
+        .social-banner-logo {
+            font-family: var(--font-display);
+            font-size: 3rem;
+            background: linear-gradient(180deg, var(--blood-bright) 0%, var(--blood-deep) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .social-banner-tag {
+            font-family: var(--font-pixel);
+            font-size: 0.5rem;
+            color: var(--fire-orange);
+            letter-spacing: 0.1em;
+        }
+
+        /* In-Game HUD Mockup */
+        .hud-mockup {
+            background: var(--void);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: var(--font-pixel);
+        }
+
+        .hud-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .hud-player {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .hud-name {
+            font-size: 0.5rem;
+            color: var(--chrome);
+        }
+
+        .hud-health {
+            width: 80px;
+            height: 12px;
+            background: var(--steel-dark);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .hud-health-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--blood-deep), var(--blood-bright));
+        }
+
+        .hud-health-fill.low {
+            background: linear-gradient(90deg, var(--fire-orange), var(--blood-bright));
+            animation: healthPulse 0.5s ease infinite;
+        }
+
+        @keyframes healthPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .hud-announcement {
+            text-align: center;
+            padding: 0.5rem;
+            background: rgba(220,20,60,0.2);
+            border-radius: 4px;
+        }
+
+        .hud-announcement-text {
+            font-size: 0.6rem;
+            color: var(--fire-amber);
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* Website Hero Mockup */
+        .website-mockup {
+            background: var(--void);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .website-hero-logo {
+            font-family: var(--font-display);
+            font-size: 2.5rem;
+            background: linear-gradient(180deg, var(--blood-bright) 0%, var(--blood-deep) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .website-hero-tagline {
+            font-family: var(--font-heading);
+            font-size: 0.9rem;
+            color: var(--chrome);
+            margin-bottom: 1rem;
+        }
+
+        .website-cta {
+            display: inline-block;
+            background: linear-gradient(180deg, var(--blood-bright) 0%, var(--blood-deep) 100%);
+            color: white;
+            font-family: var(--font-heading);
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 0.75rem 2rem;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .website-cta:hover {
+            box-shadow: 0 0 20px rgba(220,20,60,0.5);
+            transform: translateY(-2px);
+        }
+
+        /* Footer */
+        .kit-footer {
+            text-align: center;
+            padding: 3rem;
+            background: var(--void);
+        }
+
+        .kit-footer-logo {
+            font-family: var(--font-display);
+            font-size: 2.5rem;
+            background: linear-gradient(180deg, var(--blood-bright) 0%, var(--blood-deep) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .kit-footer p {
+            font-size: 0.85rem;
+            color: var(--steel-mid);
+        }
+
+        /* Barbed Wire Decorative Element */
+        .barbed-wire {
+            width: 100%;
+            height: 20px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 20'%3E%3Cpath d='M0 10 L10 10 L15 5 L20 10 L25 15 L30 10 L100 10' stroke='%23808080' stroke-width='1' fill='none'/%3E%3Ccircle cx='15' cy='5' r='2' fill='%23808080'/%3E%3Ccircle cx='25' cy='15' r='2' fill='%23808080'/%3E%3C/svg%3E");
+            background-repeat: repeat-x;
+            opacity: 0.3;
+            margin: 2rem 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .logo-grid,
+            .type-showcase,
+            .tagline-grid,
+            .voice-grid,
+            .mockup-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .logo-card.primary,
+            .tagline-card.featured,
+            .mockup-card.wide {
+                grid-column: span 1;
+            }
+
+            .voice-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .page {
+                padding: 2rem 1.5rem;
+            }
+
+            .cover-logo {
+                font-size: 6rem;
+            }
+
+            .section-title {
+                font-size: 2.5rem;
+            }
+
+            .voice-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Cover Page -->
+    <section class="page cover">
+        <div class="cover-content">
+            <div class="cover-logo">CCW</div>
+            <div class="cover-subtitle">Carnage Championship Wrestling</div>
+            <div class="cover-fire-line"></div>
+            <div class="cover-tagline">CHAIRS. TABLES. FIRE. NO MERCY.</div>
+            <div class="cover-date">Brand Identity Kit • January 2026 • Version 1.0</div>
+        </div>
+    </section>
+
+    <div class="page-divider"></div>
+
+    <!-- Logo Section -->
+    <section class="page logo-section">
+        <div class="page-inner">
+            <div class="section-header">
+                <p class="section-number">01 — LOGO SYSTEM</p>
+                <h2 class="section-title">Logo & Wordmark</h2>
+                <p class="section-subtitle">Bold, aggressive typography that captures the chaos of extreme wrestling. Designed for digital applications from favicon to social banner.</p>
+            </div>
+
+            <div class="logo-grid">
+                <div class="logo-card primary">
+                    <h3>Primary Logo</h3>
+                    <div class="logo-display">
+                        <div class="primary-logo-container">
+                            <div class="primary-logo-text">CCW</div>
+                            <div class="primary-logo-subtext">CARNAGE CHAMPIONSHIP WRESTLING</div>
+                            <div class="primary-logo-line"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="logo-card">
+                    <h3>Icon / App Symbol</h3>
+                    <div class="logo-display">
+                        <div class="icon-logo">CCW</div>
+                    </div>
+                </div>
+
+                <div class="logo-card">
+                    <h3>Pixel Version</h3>
+                    <div class="logo-display dark">
+                        <div class="pixel-logo">CCW</div>
+                    </div>
+                </div>
+
+                <div class="logo-card">
+                    <h3>Monochrome — Dark BG</h3>
+                    <div class="logo-display dark">
+                        <div style="font-family: var(--font-display); font-size: 3rem; color: white; letter-spacing: 0.05em;">CCW</div>
+                    </div>
+                </div>
+
+                <div class="logo-card">
+                    <h3>Badge / Emblem</h3>
+                    <div class="logo-display">
+                        <svg class="badge-logo" viewBox="0 0 140 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M70 10L130 35V95C130 125 70 150 70 150C70 150 10 125 10 95V35L70 10Z" stroke="#DC143C" stroke-width="2" fill="none"/>
+                            <path d="M70 25L115 45V90C115 110 70 130 70 130C70 130 25 110 25 90V45L70 25Z" fill="#1A1A1A"/>
+                            <text x="70" y="85" font-family="Bebas Neue, sans-serif" font-size="36" fill="#DC143C" text-anchor="middle">CCW</text>
+                            <text x="70" y="105" font-family="Oswald, sans-serif" font-size="8" fill="#808080" text-anchor="middle" letter-spacing="0.1em">EXTREME WRESTLING</text>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="page-divider"></div>
+
+    <!-- Color Palette Section -->
+    <section class="page color-section">
+        <div class="page-inner">
+            <div class="section-header">
+                <p class="section-number">02 — COLOR PALETTE</p>
+                <h2 class="section-title">Blood & Fire</h2>
+                <p class="section-subtitle">Visceral, aggressive colors drawn from the imagery of extreme wrestling—blood, fire, and industrial steel.</p>
+            </div>
+
+            <div class="color-category">
+                <h3>Primary — Blood Tones</h3>
+                <div class="color-grid">
+                    <div class="color-card">
+                        <div class="color-swatch" style="background: #6B0F1A;">
+                            <span>Deep</span>
+                        </div>
+                        <div class="color-info">
+                            <p class="color-name">Blood Deep</p>
+                            <p class="color-codes">HEX: #6B0F1A<br>RGB: 107, 15, 26</p>
+                        </div>
+                    </div>
+                    <div class="color-card">
+                        <div class="color-swatch" style="background: #8B0000;">
+                            <span>Primary</span>
+                        </div>
+                        <div class="color-info">
+                            <p class="color-name">Blood Primary</p>
+                            <p class="color-codes">HEX: #8B0000<br>RGB: 139, 0, 0</p>
+                        </div>
+                    </div>
+                    <div class="color-card">
+                        <div class="color-swatch" style="background: #DC143C;">
+                            <span>Bright</span>
+                        </div>
+                        <div class="color-info">
+                            <p class="color-name">Blood Bright</p>
+                            <p class="color-codes">HEX: #DC143C<br>RGB: 220, 20, 60</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="color-category">
+                <h3>Secondary — Fire Tones</h3>
+                <div class="color-grid">
+                    <div class="color-card">
+                        <div class="color-swatch" style="background: #FF4500;">
+                            <span>Orange</span>
+                        </div>
+                        <div class="color-info">
+                            <p class="color-name">Fire Orange</p>
+                            <p class="color-codes">HEX: #FF4500<br>RGB: 255, 69, 0</p>
+                        </div>
+                    </div>
+                    <div class="color-card">
+                        <div class="color-swatch" style="background: #FFB800;">
+                            <span>Amber</span>
+                        </div>
+                        <div class="color-info">
+                            <p class="color-name">Fire Amber</p>
+                            <p class="color-codes">HEX: #FFB800<br>RGB: 255, 184, 0</p>
+                        </div>
+                    </div>
+                    <div class="color-card">
+                        <div class="color-swatch" style="background: #FFD700;">
+                            <span>Yellow</span>
+                        </div>
+                        <div class="color-info">
+                            <p class="color-name">Fire Yellow</p>
+                            <p class="color-codes">HEX: #FFD700<br>RGB: 255, 215, 0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="color-category">
+                <h3>Neutrals — Industrial Steel</h3>
+                <div class="color-grid">
+                    <div class="color-card">
+                        <div class="color-swatch" style="background: #0D0D0D;">
+                            <span>Void</span>
+                        </div>
+                        <div class="color-info">
+                            <p class="color-name">Void</p>
+                            <p class="color-codes">HEX: #0D0D0D</p>
+                        </div>
+                    </div>
+                    <div class="color-card">
+                        <div class="color-swatch" style="background: #1A1A1A;">
+                            <span>Abyss</span>
+                        </div>
+                        <div class="color-info">
+                            <p class="color-name">Abyss</p>
+                            <p class="color-codes">HEX: #1A1A1A</p>
+                        </div>
+                    </div>
+                    <div class="color-card">
+                        <div class="color-swatch" style="background: #2D2D2D;">
+                            <span>Dark</span>
+                        </div>
+                        <div class="color-info">
+                            <p class="color-name">Steel Dark</p>
+                            <p class="color-codes">HEX: #2D2D2D</p>
+                        </div>
+                    </div>
+                    <div class="color-card">
+                        <div class="color-swatch" style="background: #4A4A4A;">
+                            <span>Mid</span>
+                        </div>
+                        <div class="color-info">
+                            <p class="color-name">Steel Mid</p>
+                            <p class="color-codes">HEX: #4A4A4A</p>
+                        </div>
+                    </div>
+                    <div class="color-card">
+                        <div class="color-swatch" style="background: #808080;">
+                            <span>Light</span>
+                        </div>
+                        <div class="color-info">
+                            <p class="color-name">Steel Light</p>
+                            <p class="color-codes">HEX: #808080</p>
+                        </div>
+                    </div>
+                    <div class="color-card">
+                        <div class="color-swatch" style="background: #C0C0C0;">
+                            <span>Chrome</span>
+                        </div>
+                        <div class="color-info">
+                            <p class="color-name">Chrome</p>
+                            <p class="color-codes">HEX: #C0C0C0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="page-divider"></div>
+
+    <!-- Typography Section -->
+    <section class="page type-section">
+        <div class="page-inner">
+            <div class="section-header">
+                <p class="section-number">03 — TYPOGRAPHY</p>
+                <h2 class="section-title">Type System</h2>
+                <p class="section-subtitle">Bold display fonts meet pixel art nostalgia. Typography that screams from the turnbuckle.</p>
+            </div>
+
+            <div class="type-showcase">
+                <div class="type-card">
+                    <h3>Display — Bebas Neue</h3>
+                    <p class="type-sample-display">CARNAGE</p>
+                    <p class="type-name">Bebas Neue</p>
+                    <p class="type-details">Used for: Logo, headlines, announcements, promo titles<br>Weight: Regular (400)</p>
+                </div>
+                <div class="type-card">
+                    <h3>Heading — Oswald</h3>
+                    <p class="type-sample-heading">Championship</p>
+                    <p class="type-name">Oswald</p>
+                    <p class="type-details">Used for: Subheadings, navigation, UI labels, character names<br>Weights: 400, 500, 600, 700</p>
+                </div>
+                <div class="type-card">
+                    <h3>Pixel — Press Start 2P</h3>
+                    <p class="type-sample-pixel">ROUND 1 - FIGHT!</p>
+                    <p class="type-name">Press Start 2P</p>
+                    <p class="type-details">Used for: In-game UI, scores, announcements, retro accents</p>
+                </div>
+                <div class="type-card">
+                    <h3>Body — Inter</h3>
+                    <p class="type-sample-body">The only browser-based deathmatch wrestling game. Pick up a chair and start swinging.</p>
+                    <p class="type-name">Inter</p>
+                    <p class="type-details">Used for: Body text, descriptions, bios, website copy<br>Weights: 400, 500, 600</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="page-divider"></div>
+
+    <!-- Voice & Messaging Section -->
+    <section class="page voice-section">
+        <div class="page-inner">
+            <div class="section-header">
+                <p class="section-number">04 — VOICE & MESSAGING</p>
+                <h2 class="section-title">Taglines & Tone</h2>
+                <p class="section-subtitle">Wrestling promo energy meets indie game authenticity. Hype without the cringe.</p>
+            </div>
+
+            <div class="tagline-grid">
+                <div class="tagline-card featured">
+                    <p class="tagline-text">CHAIRS. TABLES. FIRE. NO MERCY.</p>
+                    <p class="tagline-use">Primary Tagline</p>
+                </div>
+                <div class="tagline-card">
+                    <p class="tagline-text">THE GAME WWE WON'T MAKE</p>
+                    <p class="tagline-use">Provocative / Social</p>
+                </div>
+                <div class="tagline-card">
+                    <p class="tagline-text">INSTANT PLAY. INSTANT CARNAGE.</p>
+                    <p class="tagline-use">Browser Benefit</p>
+                </div>
+                <div class="tagline-card">
+                    <p class="tagline-text">EXTREME WRESTLING UNLEASHED</p>
+                    <p class="tagline-use">Hero / General</p>
+                </div>
+                <div class="tagline-card">
+                    <p class="tagline-text">ECW ENERGY. ARCADE ACCESSIBILITY.</p>
+                    <p class="tagline-use">Positioning / Press</p>
+                </div>
+                <div class="tagline-card">
+                    <p class="tagline-text">FLAMING TABLES. NO DOWNLOADS.</p>
+                    <p class="tagline-use">Punchy / Ad Copy</p>
+                </div>
+                <div class="tagline-card">
+                    <p class="tagline-text">PICK UP. BEAT DOWN. NO MANUAL.</p>
+                    <p class="tagline-use">Ease of Play</p>
+                </div>
+            </div>
+
+            <div class="barbed-wire"></div>
+
+            <div class="voice-guidelines">
+                <h3>Voice Guidelines</h3>
+                <div class="voice-grid">
+                    <div class="voice-item">
+                        <h4>Unapologetic</h4>
+                        <p>We don't soften the violence. "Slam opponents through flaming tables" not "environmental hazards."</p>
+                    </div>
+                    <div class="voice-item">
+                        <h4>Knowing</h4>
+                        <p>Wink at kayfabe. We're all in on the joke. Self-aware without being ironic or mocking the genre.</p>
+                    </div>
+                    <div class="voice-item">
+                        <h4>Accessible</h4>
+                        <p>No gatekeeping. ECW veterans and new fans equally welcome. No "you had to be there" energy.</p>
+                    </div>
+                    <div class="voice-item">
+                        <h4>Hype</h4>
+                        <p>Channel promo energy when appropriate. "ARE YOU READY?!" vibes—but earned, not forced.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="page-divider"></div>
+
+    <!-- Trading Cards Section -->
+    <section class="page cards-section">
+        <div class="page-inner">
+            <div class="section-header">
+                <p class="section-number">05 — DIGITAL TRADING CARDS</p>
+                <h2 class="section-title">Roster Cards</h2>
+                <p class="section-subtitle">Collectible digital cards for character reveals, social sharing, and community engagement.</p>
+            </div>
+
+            <div class="cards-intro">
+                <p>Each fighter gets a shareable trading card with stats, signature moves, and kayfabe bios. Perfect for roster announcements, social media content, and potential in-game unlockables.</p>
+            </div>
+
+            <div class="cards-grid">
+                <!-- Card 1: The Dumpster -->
+                <div class="trading-card legendary">
+                    <div class="card-inner">
+                        <div class="card-header">
+                            <div class="card-rarity">★ LEGENDARY ★</div>
+                            <div class="card-name">THE DUMPSTER</div>
+                            <div class="card-type">Hardcore Legend</div>
+                        </div>
+                        <div class="card-image">
+                            <div class="card-silhouette">🗑️</div>
+                        </div>
+                        <div class="card-stats">
+                            <div class="stat-block">
+                                <div class="stat-label">PWR</div>
+                                <div class="stat-value">9</div>
+                            </div>
+                            <div class="stat-block">
+                                <div class="stat-label">SPD</div>
+                                <div class="stat-value">4</div>
+                            </div>
+                            <div class="stat-block">
+                                <div class="stat-label">TGH</div>
+                                <div class="stat-value">10</div>
+                            </div>
+                            <div class="stat-block">
+                                <div class="stat-label">HRD</div>
+                                <div class="stat-value">10</div>
+                            </div>
+                        </div>
+                        <div class="card-bio">
+                            <p>"20 years of barbed wire and broken bones. The Dumpster doesn't wrestle—he survives."</p>
+                        </div>
+                        <div class="card-footer">
+                            <div class="card-logo">CCW</div>
+                            <div class="card-number">#001/002</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Scar -->
+                <div class="trading-card">
+                    <div class="card-inner">
+                        <div class="card-header">
+                            <div class="card-rarity">★ RARE ★</div>
+                            <div class="card-name">SCAR</div>
+                            <div class="card-type">Crimson Striker</div>
+                        </div>
+                        <div class="card-image">
+                            <div class="card-silhouette">⚔️</div>
+                        </div>
+                        <div class="card-stats">
+                            <div class="stat-block">
+                                <div class="stat-label">PWR</div>
+                                <div class="stat-value">7</div>
+                            </div>
+                            <div class="stat-block">
+                                <div class="stat-label">SPD</div>
+                                <div class="stat-value">7</div>
+                            </div>
+                            <div class="stat-block">
+                                <div class="stat-label">TGH</div>
+                                <div class="stat-value">8</div>
+                            </div>
+                            <div class="stat-block">
+                                <div class="stat-label">HRD</div>
+                                <div class="stat-value">10</div>
+                            </div>
+                        </div>
+                        <div class="card-bio">
+                            <p>"Every scar tells a story. Most of his stories end with someone in the hospital."</p>
+                        </div>
+                        <div class="card-footer">
+                            <div class="card-logo">CCW</div>
+                            <div class="card-number">#002/002</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="barbed-wire"></div>
+
+            <div class="voice-guidelines" style="margin-top: 2rem;">
+                <h3>Card Stat Guide</h3>
+                <div class="voice-grid">
+                    <div class="voice-item">
+                        <h4>PWR (Power)</h4>
+                        <p>Raw damage output. Higher = harder hits, more devastating weapon attacks.</p>
+                    </div>
+                    <div class="voice-item">
+                        <h4>SPD (Speed)</h4>
+                        <p>Movement and attack speed. Higher = faster combos, quicker recovery.</p>
+                    </div>
+                    <div class="voice-item">
+                        <h4>TGH (Toughness)</h4>
+                        <p>Damage resistance. Higher = more health, harder to knock down.</p>
+                    </div>
+                    <div class="voice-item">
+                        <h4>HRD (Hardcore)</h4>
+                        <p>Weapon proficiency. Higher = better weapon damage, unique weapon moves.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="page-divider"></div>
+
+    <!-- Applications Section -->
+    <section class="page apps-section">
+        <div class="page-inner">
+            <div class="section-header">
+                <p class="section-number">06 — APPLICATIONS</p>
+                <h2 class="section-title">Brand in Action</h2>
+                <p class="section-subtitle">Digital touchpoints from social banners to in-game UI.</p>
+            </div>
+
+            <div class="mockup-grid">
+                <div class="mockup-card wide">
+                    <h4>Social Media Banner</h4>
+                    <div class="social-banner">
+                        <div class="social-banner-content">
+                            <div class="social-banner-logo">CCW</div>
+                            <div class="social-banner-tag">CHAIRS. TABLES. FIRE. NO MERCY.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mockup-card">
+                    <h4>In-Game HUD</h4>
+                    <div class="hud-mockup">
+                        <div class="hud-header">
+                            <div class="hud-player">
+                                <span class="hud-name">DUMPSTER</span>
+                                <div class="hud-health">
+                                    <div class="hud-health-fill" style="width: 75%;"></div>
+                                </div>
+                            </div>
+                            <div class="hud-player">
+                                <div class="hud-health">
+                                    <div class="hud-health-fill low" style="width: 25%;"></div>
+                                </div>
+                                <span class="hud-name">SCAR</span>
+                            </div>
+                        </div>
+                        <div class="hud-announcement">
+                            <span class="hud-announcement-text">TABLE ON FIRE!</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mockup-card wide">
+                    <h4>Website Landing Hero</h4>
+                    <div class="website-mockup">
+                        <div class="website-hero-logo">CCW</div>
+                        <div class="website-hero-tagline">The only browser-based deathmatch wrestling game</div>
+                        <a href="#" class="website-cta">Play Now — Free</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="kit-footer">
+        <div class="kit-footer-logo">CCW</div>
+        <p>Carnage Championship Wrestling • Brand Identity Kit • v1.0</p>
+        <p style="margin-top: 0.5rem; font-size: 0.75rem;">January 2026 • Prepared by Yadkin Data Partners</p>
+    </footer>
+
+</body>
+</html>
