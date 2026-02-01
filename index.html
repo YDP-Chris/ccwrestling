@@ -760,7 +760,15 @@
       attack: false,
       grapple: false,
       pickup: false,
-      slam: false
+      slam: false,
+      // Track "just pressed" for action buttons (needed for attacks)
+      _prev: {},
+      justPressed: function(key) {
+        const current = this[key];
+        const prev = this._prev[key] || false;
+        this._prev[key] = current;
+        return current && !prev;
+      }
     };
 
     function openModal(type) {

@@ -78,13 +78,13 @@ export default class Fighter extends Phaser.GameObjects.Sprite {
     this.updateAnimation();
 
     // Handle escape mashing if grappled
-    if (this.state === FIGHTER_STATES.GRAPPLED && attackKey && Phaser.Input.Keyboard.JustDown(attackKey)) {
+    if (this.state === FIGHTER_STATES.GRAPPLED && this.isJustPressed(attackKey)) {
       this.tryEscape();
       return;
     }
 
     // Handle throw selection if grappling
-    if (this.state === FIGHTER_STATES.GRAPPLING && attackKey && Phaser.Input.Keyboard.JustDown(attackKey)) {
+    if (this.state === FIGHTER_STATES.GRAPPLING && this.isJustPressed(attackKey)) {
       this.executeGrappleMove();
       return;
     }
@@ -189,24 +189,36 @@ export default class Fighter extends Phaser.GameObjects.Sprite {
     }
   }
 
+  // Helper to check if a key was just pressed (works with both Phaser keys and mobile input)
+  isJustPressed(key) {
+    if (!key) return false;
+    // Check mobile input first
+    if (key.mobileJustPressed) return true;
+    // Check Phaser key
+    if (key.phaserKey && Phaser.Input.Keyboard.JustDown(key.phaserKey)) return true;
+    // Fallback for raw Phaser key objects
+    if (key.isDown !== undefined && Phaser.Input.Keyboard.JustDown(key)) return true;
+    return false;
+  }
+
   handleActions(attackKey, pickupKey, tableSlamKey, lightFireKey, grappleKey) {
-    if (attackKey && Phaser.Input.Keyboard.JustDown(attackKey)) {
+    if (this.isJustPressed(attackKey)) {
       this.attack();
     }
 
-    if (pickupKey && Phaser.Input.Keyboard.JustDown(pickupKey)) {
+    if (this.isJustPressed(pickupKey)) {
       this.tryPickup();
     }
 
-    if (tableSlamKey && Phaser.Input.Keyboard.JustDown(tableSlamKey)) {
+    if (this.isJustPressed(tableSlamKey)) {
       this.tryTableSlam();
     }
 
-    if (lightFireKey && Phaser.Input.Keyboard.JustDown(lightFireKey)) {
+    if (this.isJustPressed(lightFireKey)) {
       this.tryLightFire();
     }
 
-    if (grappleKey && Phaser.Input.Keyboard.JustDown(grappleKey)) {
+    if (this.isJustPressed(grappleKey)) {
       this.tryGrapple();
     }
   }

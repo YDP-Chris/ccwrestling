@@ -1076,7 +1076,7 @@ export default class FightScene extends Phaser.Scene {
     }
 
     // Get mobile input from global window.mobileInput (set by HTML touch controls)
-    const mobile = window.mobileInput || {};
+    const mobile = window.mobileInput || { justPressed: () => false };
 
     // Create combined input that merges keyboard and mobile touch
     const combinedCursors = {
@@ -1086,10 +1086,27 @@ export default class FightScene extends Phaser.Scene {
       right: { isDown: this.cursors.right.isDown || mobile.right }
     };
 
-    const combinedAttack = { isDown: this.attackKey.isDown || mobile.attack };
-    const combinedPickup = { isDown: this.pickupKey.isDown || mobile.pickup };
-    const combinedSlam = { isDown: this.tableSlamKey.isDown || mobile.slam };
-    const combinedGrapple = { isDown: this.grappleKey.isDown || mobile.grapple };
+    // For action buttons, we need both the Phaser key (for JustDown) and mobile justPressed state
+    const combinedAttack = {
+      isDown: this.attackKey.isDown || mobile.attack,
+      phaserKey: this.attackKey,
+      mobileJustPressed: mobile.justPressed('attack')
+    };
+    const combinedPickup = {
+      isDown: this.pickupKey.isDown || mobile.pickup,
+      phaserKey: this.pickupKey,
+      mobileJustPressed: mobile.justPressed('pickup')
+    };
+    const combinedSlam = {
+      isDown: this.tableSlamKey.isDown || mobile.slam,
+      phaserKey: this.tableSlamKey,
+      mobileJustPressed: mobile.justPressed('slam')
+    };
+    const combinedGrapple = {
+      isDown: this.grappleKey.isDown || mobile.grapple,
+      phaserKey: this.grappleKey,
+      mobileJustPressed: mobile.justPressed('grapple')
+    };
 
     // Update player with combined input
     this.player.update(
