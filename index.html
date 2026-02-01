@@ -517,6 +517,33 @@
     }
     .btn-slam.active { transform: translateX(-50%) scale(0.9); }
 
+    /* Pause button */
+    .pause-zone {
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .btn-pause {
+      width: 50px;
+      height: 30px;
+      background-color: rgba(60,60,60,0.7);
+      border: 2px solid rgba(255,255,255,0.4);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Press Start 2P', cursive;
+      font-size: 7px;
+      color: #fff;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-pause.active {
+      background-color: rgba(255,150,0,0.8);
+    }
+
     /* ============ MOBILE LAYOUT ============ */
     /* Use max-height to detect mobile in landscape (phones have height < 500px in landscape) */
     @media (max-height: 500px) and (orientation: landscape),
@@ -667,6 +694,11 @@
 
   <!-- MOBILE TOUCH CONTROLS -->
   <div class="mobile-controls">
+    <!-- Pause Button -->
+    <div class="touch-zone pause-zone">
+      <div class="btn-pause" id="btn-pause">| |</div>
+    </div>
+
     <!-- D-Pad -->
     <div class="touch-zone dpad-zone">
       <div class="dpad">
@@ -761,6 +793,7 @@
       grapple: false,
       pickup: false,
       slam: false,
+      pause: false,
       // Track "just pressed" for action buttons (needed for attacks)
       _prev: {},
       justPressed: function(key) {
@@ -834,6 +867,9 @@
     document.querySelectorAll('.action-btn').forEach(btn => {
       setupButton(btn, btn.dataset.action);
     });
+
+    // Pause button
+    setupButton(document.getElementById('btn-pause'), 'pause');
 
   </script>
 

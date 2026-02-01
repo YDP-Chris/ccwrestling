@@ -1049,10 +1049,13 @@ export default class FightScene extends Phaser.Scene {
   }
 
   update(time, delta) {
+    // Get mobile input for pause
+    const mobile = window.mobileInput || { justPressed: () => false };
+
     // Handle pause (only after match started)
     if (this.matchStarted) {
-      if (Phaser.Input.Keyboard.JustDown(this.pauseKey)) {
-        console.log('ESC key pressed');
+      if (Phaser.Input.Keyboard.JustDown(this.pauseKey) || mobile.justPressed('pause')) {
+        console.log('Pause triggered');
         this.togglePause();
         return;
       }
@@ -1060,7 +1063,7 @@ export default class FightScene extends Phaser.Scene {
 
     // Handle quit to menu while paused
     if (this.isPaused) {
-      if (Phaser.Input.Keyboard.JustDown(this.menuEnterKey)) {
+      if (Phaser.Input.Keyboard.JustDown(this.menuEnterKey) || mobile.justPressed('attack')) {
         this.effectsManager.stopAllAudio();
         this.scene.start('MenuScene');
       }
