@@ -4,89 +4,81 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-CCW (Carnage Championship Wrestling) is a browser-based 2D beat-em-up extreme wrestling game celebrating hardcore/deathmatch wrestling in the style of ECW, FMW, and BJW.
+CCW (Carnage Championship Wrestling) is a browser-based 2D beat-em-up extreme wrestling game celebrating hardcore/deathmatch wrestling in the style of ECW, FMW, and BJW. Built with Phaser 3 and Vite.
 
-**Status:** Ready for Development
-
-## Skill Files (Read These First)
-
-| File | Purpose |
-|------|---------|
-| `skills/SKILL.md` | Quick overview and read order |
-| `skills/ccw-game/PRD.md` | What to build — features, personas, specs |
-| `skills/ccw-game/ARCHITECTURE.md` | How to structure code — patterns, file organization |
-| `skills/phaser3/SKILL.md` | Phaser 3 API patterns (reference as needed) |
-| `skills/ccw-game/ASSETS.md` | Asset specs — sprites, audio, file structure |
-
-## Tech Stack
-
-| Layer | Technology |
-|-------|------------|
-| Framework | Phaser 3.80+ |
-| Language | Vanilla JavaScript (ES6+) |
-| Build | Vite |
-| Rendering | Canvas 2D (Arcade Physics) |
-| Resolution | 800x450 |
-| Hosting | Vercel or Cloudflare Pages |
+**Current Status:** v0.7 - 5 characters designed (2 fully animated), core systems complete, working toward v1.0.
 
 ## Development Commands
 
 ```bash
-npm install          # Install dependencies
-npm run dev          # Start Vite dev server (localhost:5173)
-npm run build        # Production build to /dist
-vercel deploy --prod # Deploy to Vercel
+npm install              # Install dependencies
+npm run dev              # Start Vite dev server (localhost:5173)
+npm run build            # Production build to /dist
+
+# Testing
+npm run test             # Run unit tests (vitest)
+npm run test:watch       # Watch mode for tests
+npm run test:ui          # Vitest UI
+npm run test:e2e         # Run Playwright E2E tests
+npm run test:e2e:headed  # E2E with visible browser
+
+vercel deploy --prod     # Deploy to Vercel
 ```
 
-## Project Structure
+## Tech Stack
 
+- **Framework:** Phaser 3.80+ with Arcade Physics
+- **Language:** Vanilla JavaScript (ES6 modules)
+- **Build:** Vite 5.4+
+- **Testing:** Vitest (unit), Playwright (E2E)
+- **Resolution:** 800x450, Canvas 2D
+
+## Architecture
+
+### Scene Flow
 ```
-src/
-├── main.js              # Phaser game config and launch
-├── scenes/
-│   ├── BootScene.js     # Asset loading
-│   ├── MenuScene.js     # Title screen
-│   ├── FightScene.js    # Main gameplay
-│   └── GameOverScene.js # Results screen
-├── entities/
-│   ├── Fighter.js       # Base fighter class
-│   ├── Dumpster.js      # Character-specific
-│   ├── Scar.js          # Character-specific
-│   ├── Chair.js         # Steel chair weapon
-│   └── Table.js         # Breakable/burnable table
-├── systems/
-│   ├── CombatSystem.js  # Hit detection, damage
-│   ├── AIController.js  # Enemy AI behavior
-│   └── EffectsManager.js# Particles, shake, sounds
-├── ui/
-│   ├── HealthBar.js
-│   ├── ExtremeMeter.js
-│   └── Announcer.js
-└── config/
-    ├── constants.js     # DAMAGE, COMBAT, METER values
-    ├── characters.js    # Stats, hitboxes, animations
-    └── controls.js      # Key mappings
+BootScene → TitleScene → MenuScene → CharacterSelectScene → FightScene → GameOverScene
+                              ↓
+                        CareerMenuScene
+                              ↓
+                        OptionsScene
 ```
 
-## Key Patterns
+### Core Systems (src/systems/)
+| System | Purpose |
+|--------|---------|
+| `CombatSystem.js` | Hit detection, damage calculation, knockback |
+| `AIController.js` | Enemy AI with 7 states (IDLE, APPROACH, ATTACK, RETREAT, SEEK_WEAPON, SEEK_TABLE, GRAPPLE) |
+| `EffectsManager.js` | Particles, screen shake, audio, announcer callouts |
+| `GrappleLogic.js` | Pure grapple logic (Phaser-independent, fully unit tested) |
+| `StatsManager.js` | Match statistics tracking |
+| `CareerManager.js` | Career mode progression data |
+| `TransitionManager.js` | Scene transitions with data passing |
+| `replay/` | Deterministic replay system with seeded RNG |
 
-- **Scenes are thin** — delegate to systems and entities
-- **Entities manage their own state** — Fighter has state machine (idle, attacking, hitstun, down, getup, ko)
-- **Systems handle cross-entity logic** — CombatSystem for hits, EffectsManager for juice
-- **Config files for all tunable values** — never hardcode damage, speeds, timings
-- **Animation keys prefixed with character** — `dumpster-idle`, `scar-attack-chair`
+### Entity Pattern
+`Fighter.js` is the base class with a state machine:
+- States: `IDLE`, `WALKING`, `ATTACKING`, `HITSTUN`, `DOWN`, `GETUP`, `KO`, `GRAPPLING`, `GRAPPLED`, `THROWING`
+- Weapons (`Chair.js`, `Table.js`) are separate entities fighters can pick up
 
-## Game Values Quick Reference
+### Configuration-Driven Design
+All tunable values live in `src/config/`:
+- `constants.js` - Damage, ranges, timings, meter gains
+- `characters.js` - Character stats and animation definitions
+- `controls.js` - Input key mappings
 
-| Stat | Value |
-|------|-------|
-| Player Health | 100 |
-| Fist Damage | 8-12 |
-| Chair Damage | 22 |
-| Table Slam | 35 |
-| Flaming Table | 55 |
-| Fire DOT | 3/tick (6 ticks) |
-| Movement Speed | 160 px/s |
+## Game Values (from constants.js)
+
+| Category | Value |
+|----------|-------|
+| **Health** | 300 HP base |
+| **Movement** | 280 px/s base |
+| **Fist Damage** | 8-12 |
+| **Chair Damage** | 22 |
+| **Table Slam** | 35 |
+| **Flaming Table** | 55 |
+| **Fire DOT** | 3/tick × 6 ticks |
+| **Grapple Throws** | 14-20 (throw/bodyslam/suplex/DDT) |
 
 ## Controls
 
@@ -97,41 +89,37 @@ src/
 | Pickup | K | X |
 | Table Slam | L | C |
 | Light Fire | F | — |
+| Grapple | G | V |
 | Pause | ESC | ESC |
 
-## Development Phases
+## Key Patterns
 
-### Phase 1: Core (Get it playable)
-1. Project setup (Vite + Phaser)
-2. Boot scene with placeholder assets
-3. Fighter entity with movement
-4. Basic combat (attack, damage, hitstun)
-5. Health bars
-6. Win condition
+- **Scenes are thin** — delegate to systems and entities
+- **Entities own their state** — Fighter manages its own state machine
+- **Systems handle cross-entity logic** — CombatSystem for hits, EffectsManager for juice
+- **Config files for all tunable values** — never hardcode damage, speeds, timings
+- **Animation keys:** `{character}-{action}` (e.g., `dumpster-idle`, `scar-punch`)
+- **Sprites:** 128×128 frames in 256×256 spritesheets (2×2 grid), displayed at 2.5x scale
 
-### Phase 2: Weapons (Make it fun)
-1. Chair pickup and swing
-2. Table placement
-3. Fire mechanic
-4. Table slam/break
-5. Particle effects
-6. Screen shake
+## Testing
 
-### Phase 3: Polish (Make it good)
-1. AI opponent
-2. Extreme meter
-3. Menu and game over screens
-4. Sound effects
-5. Full animations
-6. Final balance tuning
+Unit tests cover `GrappleLogic` (61+ tests) and replay system. Run specific tests:
+```bash
+npm run test -- grapple        # Run grapple tests
+npm run test -- replay         # Run replay tests
+```
 
-## Coding Standards
+E2E tests in `tests/` cover full game flows (chair mechanics, table mechanics, AI behavior).
 
-- **Files**: PascalCase for classes (`Fighter.js`), camelCase for config (`constants.js`)
-- **Classes**: PascalCase (`CombatSystem`)
-- **Methods**: camelCase (`performAttack`)
-- **Constants**: UPPER_SNAKE_CASE (`MAX_HEALTH`)
-- **Animation keys**: kebab-case with character prefix (`dumpster-idle`)
+## Documentation
+
+| File | Purpose |
+|------|---------|
+| `skills/ccw-game/PRD.md` | Product requirements |
+| `skills/ccw-game/ARCHITECTURE.md` | Code patterns |
+| `skills/ccw-game/ASSETS.md` | Asset specifications |
+| `skills/phaser3/SKILL.md` | Phaser 3 API reference |
+| `ROADMAP.md` | v1.0 development roadmap with current status |
 
 ## OpenSpec Workflow
 
@@ -155,25 +143,6 @@ Use `@/openspec/AGENTS.md` to learn:
 Keep this managed block so 'openspec update' can refresh the instructions.
 
 <!-- OPENSPEC:END -->
-
-### OpenSpec Quick Reference
-
-```bash
-openspec list                  # List active changes
-openspec list --specs          # List specifications
-openspec show [item]           # Display change or spec
-openspec validate [item] --strict --no-interactive  # Validate
-openspec archive <change-id> --yes  # Archive after deployment
-```
-
-### OpenSpec Directory Structure
-```
-openspec/
-├── project.md          # Project conventions
-├── specs/              # Current truth (what IS built)
-├── changes/            # Proposals (what SHOULD change)
-└── changes/archive/    # Completed changes
-```
 
 ### When to Use OpenSpec
 - **Use it**: New features, breaking changes, architecture decisions
