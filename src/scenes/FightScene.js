@@ -38,6 +38,7 @@ export default class FightScene extends Phaser.Scene {
     // Arcade/Survival mode data
     this.arcadeProgress = data.arcadeProgress || 0;
     this.carryHealth = data.carryHealth || null;  // For survival mode
+    this.survivalStreak = data.survivalStreak || 0;  // Current survival streak
 
     // Career mode data
     this.career = data.career || null;
@@ -563,12 +564,20 @@ export default class FightScene extends Phaser.Scene {
     };
 
     const difficulty = this.settings?.difficulty || 'normal';
-    const settings = difficultySettings[difficulty];
+    const settings = { ...difficultySettings[difficulty] };
 
     // Practice mode - AI doesn't attack
     if (this.gameMode === 'practice') {
       settings.aggressiveness = 0;
       settings.attackCooldown = 99999;
+    }
+
+    // Survival mode - difficulty ramps with streak
+    if (this.gameMode === 'survival' && this.survivalStreak > 0) {
+      const streakBonus = Math.min(this.survivalStreak * 0.05, 0.3); // Max +30% aggression
+      settings.aggressiveness = Math.min(settings.aggressiveness + streakBonus, 0.9);
+      settings.thinkInterval = Math.max(settings.thinkInterval - this.survivalStreak * 50, 300);
+      settings.attackCooldown = Math.max(settings.attackCooldown - this.survivalStreak * 100, 600);
     }
 
     // Create AI controller for enemy
@@ -640,17 +649,33 @@ export default class FightScene extends Phaser.Scene {
         fontSize: '10px',
         color: '#FFFFFF'
       }).setOrigin(0.5);
+    } else if (this.gameMode === 'survival') {
+      // Survival mode - show streak
+      this.add.text(GAME.WIDTH / 2, 10, 'SURVIVAL', {
+        fontFamily: 'Arial Black',
+        fontSize: '12px',
+        color: '#FF4500'
+      }).setOrigin(0.5);
+
+      // Show current streak
+      const streakText = this.survivalStreak > 0 ? `STREAK: ${this.survivalStreak}` : 'FIRST FIGHT';
+      this.add.text(GAME.WIDTH / 2, 26, streakText, {
+        fontFamily: 'Arial',
+        fontSize: '10px',
+        color: this.survivalStreak >= 5 ? '#FFD700' : '#FFFFFF'
+      }).setOrigin(0.5);
     } else if (this.gameMode !== 'quick') {
       const modeLabels = {
         arcade: 'ARCADE',
-        survival: 'SURVIVAL',
         practice: 'PRACTICE'
       };
-      this.add.text(GAME.WIDTH / 2, 15, modeLabels[this.gameMode], {
-        fontFamily: 'Arial',
-        fontSize: '10px',
-        color: '#FF4500'
-      }).setOrigin(0.5);
+      if (modeLabels[this.gameMode]) {
+        this.add.text(GAME.WIDTH / 2, 15, modeLabels[this.gameMode], {
+          fontFamily: 'Arial',
+          fontSize: '10px',
+          color: '#FF4500'
+        }).setOrigin(0.5);
+      }
     }
   }
 
@@ -782,6 +807,10 @@ export default class FightScene extends Phaser.Scene {
       return;
     }
 
+    // Calculate new survival streak
+    const newSurvivalStreak = this.winner === this.player ?
+      this.survivalStreak + 1 : 0;
+
     // Transition to game over
     this.time.delayedCall(TIMING.KO_DELAY + 500, () => {
       this.effectsManager.stopAllAudio();
@@ -794,6 +823,7 @@ export default class FightScene extends Phaser.Scene {
         opponent: this.opponentCharKey,
         playerHealth: this.player.health,
         arcadeProgress: this.arcadeProgress || 0,
+        survivalStreak: newSurvivalStreak,
         timeDecision: true,
         career: this.career,
         isPPV: this.isPPV,
@@ -879,6 +909,10 @@ export default class FightScene extends Phaser.Scene {
       return;
     }
 
+    // Calculate new survival streak
+    const newSurvivalStreak = this.winner === this.player ?
+      this.survivalStreak + 1 : 0;
+
     // Transition to game over
     this.time.delayedCall(TIMING.KO_DELAY, () => {
       this.effectsManager.stopAllAudio();
@@ -891,6 +925,7 @@ export default class FightScene extends Phaser.Scene {
         opponent: this.opponentCharKey,
         playerHealth: this.player.health,
         arcadeProgress: this.arcadeProgress || 0,
+        survivalStreak: newSurvivalStreak,
         career: this.career,
         isPPV: this.isPPV,
         isTitleMatch: this.isTitleMatch

@@ -21,6 +21,7 @@ export default class GameOverScene extends Phaser.Scene {
     this.opponentCharKey = data.opponent || 'SCAR';
     this.playerHealth = data.playerHealth || 300;  // For survival mode
     this.arcadeProgress = data.arcadeProgress || 0; // Fights completed in arcade
+    this.survivalStreak = data.survivalStreak || 0; // Current survival streak
 
     // Career mode data
     this.career = data.career || null;
@@ -132,6 +133,53 @@ export default class GameOverScene extends Phaser.Scene {
           duration: 500,
           delay: 500
         });
+      }
+    }
+
+    // Survival mode streak display
+    if (this.gameMode === 'survival') {
+      const streakColor = this.survivalStreak >= 5 ? '#FFD700' :
+                         this.survivalStreak >= 3 ? '#FF4500' : '#FFFFFF';
+
+      if (this.playerWon) {
+        const streakText = this.add.text(GAME.WIDTH / 2, 165,
+          `STREAK: ${this.survivalStreak}`, {
+          fontFamily: 'Arial Black',
+          fontSize: '20px',
+          color: streakColor
+        });
+        streakText.setOrigin(0.5);
+        streakText.setAlpha(0);
+        this.tweens.add({
+          targets: streakText,
+          alpha: 1,
+          scale: 1.1,
+          duration: 500,
+          delay: 500,
+          yoyo: true,
+          repeat: -1
+        });
+      } else if (this.survivalStreak > 0) {
+        // Show final streak when losing
+        const finalText = this.add.text(GAME.WIDTH / 2, 165,
+          `FINAL STREAK: ${this.survivalStreak - 1}`, {
+          fontFamily: 'Arial',
+          fontSize: '14px',
+          color: '#888888'
+        });
+        finalText.setOrigin(0.5);
+
+        // Check and show if new best
+        const stats = StatsManager.load();
+        if (this.survivalStreak - 1 > (stats.modeStats?.survival?.bestStreak || 0)) {
+          const newBestText = this.add.text(GAME.WIDTH / 2, 185,
+            'NEW BEST!', {
+            fontFamily: 'Arial Black',
+            fontSize: '16px',
+            color: '#FFD700'
+          });
+          newBestText.setOrigin(0.5);
+        }
       }
     }
 
@@ -319,7 +367,7 @@ export default class GameOverScene extends Phaser.Scene {
 
       case 'survival-next':
         this.hasSelected = true;
-        // Random opponent, carry health over
+        // Random opponent, carry health and streak over
         const chars = require('../config/characters.js').CHARACTERS;
         const keys = Object.keys(chars).filter(k => k !== this.playerCharKey);
         const randomOpponent = keys[Math.floor(Math.random() * keys.length)];
@@ -327,7 +375,8 @@ export default class GameOverScene extends Phaser.Scene {
           mode: 'survival',
           player: this.playerCharKey,
           opponent: randomOpponent,
-          carryHealth: this.playerHealth
+          carryHealth: this.playerHealth,
+          survivalStreak: this.survivalStreak
         });
         break;
 
