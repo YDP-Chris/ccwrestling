@@ -458,6 +458,19 @@ export default class EffectsManager {
       });
       this.fireLoopSound.play();
     }
+
+    // Start continuous fire particles on table
+    this.burningTable = table;
+    this.fireParticleTimer = this.scene.time.addEvent({
+      delay: 150,
+      callback: () => {
+        if (this.burningTable && this.burningTable.isOnFire()) {
+          this.spawnFire(this.burningTable.x + Phaser.Math.Between(-40, 40),
+                        this.burningTable.y - 20, 3);
+        }
+      },
+      loop: true
+    });
   }
 
   onTableBroken(table, wasOnFire) {
@@ -466,11 +479,17 @@ export default class EffectsManager {
 
     if (wasOnFire) {
       this.spawnFire(table.x, table.y, 15);
-      // Stop fire loop
+      // Stop fire loop sound
       if (this.fireLoopSound) {
         this.fireLoopSound.stop();
         this.fireLoopSound = null;
       }
+      // Stop fire particle timer
+      if (this.fireParticleTimer) {
+        this.fireParticleTimer.destroy();
+        this.fireParticleTimer = null;
+      }
+      this.burningTable = null;
     }
   }
 
@@ -548,6 +567,10 @@ export default class EffectsManager {
     }
     if (this.fireLoopSound) {
       this.fireLoopSound.stop();
+    }
+    if (this.fireParticleTimer) {
+      this.fireParticleTimer.destroy();
+      this.fireParticleTimer = null;
     }
   }
 
