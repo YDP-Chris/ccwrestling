@@ -148,23 +148,17 @@
 
 ---
 
-## Phase 4: Polish & Ship (Sessions 19-24)
+## Phase 4: Polish & Ship (Sessions 19-22)
 
-### Session 19-20: Local 2-Player
-- [ ] Player 2 controls
-- [ ] 2P character select
-- [ ] 2P UI
+### Session 19-20: Final Polish
+- [ ] Bug bash and edge case testing
+- [ ] Performance optimization
+- [ ] Mobile browser testing
+- [ ] Balance tweaks if needed
 
-### Session 21-22: Settings & Accessibility
-- [ ] Options menu
-- [ ] Volume controls
-- [ ] Difficulty settings
-
-### Session 23-24: Launch Prep
-- [ ] Bug bash
-- [ ] Performance check
-- [ ] Mobile browser test
+### Session 21-22: Launch Prep
 - [ ] README update
+- [ ] Final testing pass
 - [ ] Deploy to Vercel
 - [ ] v1.0 tag
 
@@ -228,6 +222,6 @@
 | Phase 1 | 1-4 | 5 Complete Characters | ✅ Complete |
 | Phase 2 | 5-10 | Audio & Polish | ✅ Complete |
 | Phase 3 | 11-18 | Game Modes | ✅ Complete |
-| Phase 4 | 19-24 | Ship v1.0 | ⬜ TODO |
+| Phase 4 | 19-22 | Ship v1.0 | ⬜ TODO |
 
-**Estimated remaining:** ~6 sessions (Phase 4: 2P, settings, polish, ship)
+**Estimated remaining:** ~4 sessions (Phase 4: polish, testing, ship)
