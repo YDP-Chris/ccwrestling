@@ -340,11 +340,15 @@ export default class CareerMenuScene extends Phaser.Scene {
   }
 
   navigate(direction) {
+    const prev = this.selectedOption;
     this.selectedOption = Phaser.Math.Wrap(
       this.selectedOption + direction,
       0,
       this.menuOptions.length
     );
+    if (prev !== this.selectedOption && this.cache.audio.exists('sfx-menu-navigate')) {
+      this.sound.play('sfx-menu-navigate', { volume: 0.3 });
+    }
     this.updateMenuSelection();
   }
 
@@ -352,17 +356,109 @@ export default class CareerMenuScene extends Phaser.Scene {
     const option = this.menuOptions[this.selectedOption];
     if (!option) return;
 
+    // Play select sound
+    if (this.cache.audio.exists('sfx-menu-select')) {
+      this.sound.play('sfx-menu-select', { volume: 0.5 });
+    }
+
     switch (option.action) {
       case 'fight':
         this.startMatch();
         break;
       case 'roster':
-        // Could implement a roster view
+        this.showRoster();
         break;
       case 'back':
         this.goBack();
         break;
     }
+  }
+
+  showRoster() {
+    // Create roster overlay
+    if (this.rosterOverlay) return;
+
+    this.rosterOverlay = this.add.container(0, 0);
+    this.rosterOverlay.setDepth(1000);
+
+    // Background
+    const bg = this.add.rectangle(GAME.WIDTH / 2, GAME.HEIGHT / 2, GAME.WIDTH, GAME.HEIGHT, 0x000000, 0.95);
+    this.rosterOverlay.add(bg);
+
+    // Title
+    const title = this.add.text(GAME.WIDTH / 2, 30, 'ROSTER', {
+      fontFamily: 'Arial Black',
+      fontSize: '28px',
+      color: '#FF4500'
+    }).setOrigin(0.5);
+    this.rosterOverlay.add(title);
+
+    // Show all characters
+    const charKeys = Object.keys(CHARACTERS);
+    const startX = 80;
+    const spacing = (GAME.WIDTH - 160) / charKeys.length;
+
+    charKeys.forEach((key, index) => {
+      const char = CHARACTERS[key];
+      const x = startX + spacing * index + spacing / 2;
+      const y = 180;
+
+      // Character sprite
+      if (this.textures.exists(`${char.spriteKey}-idle`)) {
+        const sprite = this.add.sprite(x, y, `${char.spriteKey}-idle`, 0);
+        sprite.setScale(1.5);
+        this.rosterOverlay.add(sprite);
+      }
+
+      // Name
+      const isPlayer = key === this.career.playerCharacter;
+      const isRival = key === this.career.currentRival;
+      const nameColor = isPlayer ? '#00FF00' : isRival ? '#FF0000' : '#FFFFFF';
+
+      const nameText = this.add.text(x, y + 70, char.name, {
+        fontFamily: 'Arial Black',
+        fontSize: '14px',
+        color: nameColor
+      }).setOrigin(0.5);
+      this.rosterOverlay.add(nameText);
+
+      // Role indicator
+      if (isPlayer) {
+        const youText = this.add.text(x, y + 88, '(YOU)', {
+          fontFamily: 'Arial',
+          fontSize: '10px',
+          color: '#00FF00'
+        }).setOrigin(0.5);
+        this.rosterOverlay.add(youText);
+      } else if (isRival) {
+        const rivalText = this.add.text(x, y + 88, 'RIVAL', {
+          fontFamily: 'Arial',
+          fontSize: '10px',
+          color: '#FF0000'
+        }).setOrigin(0.5);
+        this.rosterOverlay.add(rivalText);
+      }
+    });
+
+    // Instructions
+    const hint = this.add.text(GAME.WIDTH / 2, GAME.HEIGHT - 40, 'Press ESC or ENTER to close', {
+      fontFamily: 'Arial',
+      fontSize: '12px',
+      color: '#888888'
+    }).setOrigin(0.5);
+    this.rosterOverlay.add(hint);
+
+    // Close handlers
+    const closeRoster = () => {
+      if (this.rosterOverlay) {
+        this.rosterOverlay.destroy();
+        this.rosterOverlay = null;
+      }
+    };
+
+    this.input.keyboard.once('keydown-ESC', closeRoster);
+    this.input.keyboard.once('keydown-ENTER', closeRoster);
+    this.input.once('pointerdown', closeRoster);
   }
 
   startMatch() {
