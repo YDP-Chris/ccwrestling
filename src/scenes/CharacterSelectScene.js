@@ -376,9 +376,9 @@ export default class CharacterSelectScene extends Phaser.Scene {
       yoyo: true
     });
 
-    // Use flash transition to fight
+    // Go to arena select
     this.time.delayedCall(400, () => {
-      TransitionManager.flashToScene(this, 'FightScene', {
+      TransitionManager.wipeToScene(this, 'ArenaSelectScene', {
         mode: this.gameMode,
         player: playerKey,
         opponent: opponentKey

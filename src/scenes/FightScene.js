@@ -34,6 +34,7 @@ export default class FightScene extends Phaser.Scene {
     this.gameMode = data.mode || 'quick';
     this.playerCharKey = data.player || 'DUMPSTER';
     this.opponentCharKey = data.opponent || 'SCAR';
+    this.selectedArena = data.arena || null; // Arena selection from ArenaSelectScene
 
     // Arcade/Survival mode data
     this.arcadeProgress = data.arcadeProgress || 0;
@@ -87,9 +88,9 @@ export default class FightScene extends Phaser.Scene {
     try {
       console.log('FightScene: Starting create()');
 
-      // Arena background - randomly select from available arenas
+      // Arena background - use selected arena or randomly select if not specified
       const arenas = ['arena-warehouse', 'arena-basement', 'arena-basement2', 'arena-factory', 'arena-parking'];
-      const selectedArena = Phaser.Utils.Array.GetRandom(arenas);
+      const selectedArena = this.selectedArena || Phaser.Utils.Array.GetRandom(arenas);
       console.log('FightScene: Loading arena background:', selectedArena);
       const arena = this.add.image(GAME.WIDTH / 2, GAME.HEIGHT / 2, selectedArena);
       arena.setDisplaySize(GAME.WIDTH, GAME.HEIGHT);

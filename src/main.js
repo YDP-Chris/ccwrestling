@@ -3,6 +3,7 @@ import BootScene from './scenes/BootScene.js';
 import TitleScene from './scenes/TitleScene.js';
 import MenuScene from './scenes/MenuScene.js';
 import CharacterSelectScene from './scenes/CharacterSelectScene.js';
+import ArenaSelectScene from './scenes/ArenaSelectScene.js';
 import CareerMenuScene from './scenes/CareerMenuScene.js';
 import OptionsScene from './scenes/OptionsScene.js';
 import FightScene from './scenes/FightScene.js';
@@ -26,7 +27,7 @@ const config = {
       debug: false
     }
   },
-  scene: [BootScene, TitleScene, MenuScene, CharacterSelectScene, CareerMenuScene, OptionsScene, FightScene, GameOverScene],
+  scene: [BootScene, TitleScene, MenuScene, CharacterSelectScene, ArenaSelectScene, CareerMenuScene, OptionsScene, FightScene, GameOverScene],
   pixelArt: true,
   roundPixels: true,
   input: {

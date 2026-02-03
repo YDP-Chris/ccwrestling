@@ -6,346 +6,268 @@
 
 ---
 
-## Current State (v0.5)
+## Current State (v0.7) - Updated 2026-02-03
 
 ### Done ✅
 - [x] Core fighting mechanics (movement, punch, hitstun, knockdown)
-- [x] 2 characters (Dumpster, Scar)
-- [x] 2 arenas (Warehouse, Basement)
-- [x] Grapple system with 4 throws
+- [x] 5 characters defined (Dumpster, Scar, Blaze, Tank, Viper)
+- [x] 2 fully animated characters (Dumpster, Scar - all 14 sprites)
+- [x] 3 partially animated characters (Blaze, Tank, Viper - 6/14 sprites each)
+- [x] 4+ arenas (Warehouse, Basement, Parking Lot, Factory, Alley variants)
+- [x] Grapple system with 4 throws (suplex, DDT, bodyslam, base throw)
 - [x] Health bars and Extreme meter
-- [x] AI opponent
-- [x] Menu and Game Over screens
-- [x] Unit tests (79 passing)
-- [x] Replay system
+- [x] AI opponent with weapon awareness
+- [x] Menu, Title, and Game Over screens
+- [x] Character Select screen (functional)
+- [x] Unit tests (61+ grapple tests, replay tests)
+- [x] Replay system with seeded RNG
 - [x] Pause functionality
+- [x] Chair weapon (pickup, swing, breaks after 3 hits, debris particles)
+- [x] Table weapon (placement, break mechanics, fire state)
+- [x] Fire mechanic (ignite table, DOT 3dmg × 6 ticks)
+- [x] Career mode data structure (5 chapters, 6 PPVs, rivalry system)
+- [x] Stats tracking system
+- [x] Transition manager for scene changes
+- [x] All SFX loaded (hit, chair, table, fire, crowd, menu, KO, music)
 
 ### Partially Done 🟡
-- [ ] Chair weapon (code exists, needs polish)
-- [ ] Table weapon (code exists, needs fire mechanic)
-- [ ] Sound effects (some exist, need more)
+- [ ] 3 characters need remaining 8 animations each (Blaze, Tank, Viper)
+- [ ] Fire visual effects on burning fighters
 
 ---
 
-## Phase 1: Core Polish (Sessions 1-8)
+## Character Reference
 
-**Goal:** Make what exists feel complete and polished.
+### Visual Designs
 
-### Session 1-2: Weapons Complete
-- [ ] Chair pickup and swing working
-- [ ] Chair sprites (ground, held)
-- [ ] Chair hit sound effect
-- [ ] Chair breaks after 3 hits
+| Character | Build | Appearance | Palette |
+|-----------|-------|------------|---------|
+| **Dumpster** | Heavyset, barrel chest | Red/black plaid flannel, gray hair/beard, jeans, work boots | Browns, reds, gray |
+| **Scar** | Lean, wiry | Shirtless, black pants, dark spiky hair, red bandana, hand wraps | Black, red, skin |
+| **Blaze** | Athletic, muscular | Shirtless, red/orange trunks & boots, spiky fire-red hair | Orange, red, yellow |
+| **Tank** | Massive, bulky | Black tank top, bald, heavily tattooed arms | Black, skin, tattoo colors |
+| **Viper** | Lean, athletic | Shirtless, green patterned pants, green mask/face paint | Green, black, skin |
 
-### Session 3-4: Table Mechanics
-- [ ] Table placement in arena
-- [ ] Table slam move (throw opponent through)
-- [ ] Table breaks with debris particles
-- [ ] Table slam sound effect
+### Animation Status
 
-### Session 5-6: Fire Mechanic
-- [ ] Light table on fire (F key near table)
-- [ ] Fire visual effect on table
-- [ ] Flaming table slam (bonus damage)
-- [ ] Fire DOT when fighter is burning
-- [ ] Fire particle effects
+| Character | idle | walk | punch | hit | down | victory | chair | getup | grapple | grappled | throw | throw-suplex | throw-ddt | throw-bodyslam |
+|-----------|------|------|-------|-----|------|---------|-------|-------|---------|----------|-------|--------------|-----------|----------------|
+| Dumpster | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Scar | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Blaze | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Tank | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Viper | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 
-### Session 7-8: Audio Pass
-- [ ] Hit sounds (punch, chair, slam)
-- [ ] Grapple/throw sounds
-- [ ] Crowd reactions
-- [ ] Fight music track
-- [ ] Victory fanfare
+**Total sprites needed:** 24 (8 per incomplete character × 3 characters)
 
-**Phase 1 Deliverable:** Complete fighting experience with weapons and audio.
+### Character Stats
 
----
-
-## Phase 2: Characters (Sessions 9-18)
-
-**Goal:** 4 playable characters with distinct styles.
-
-### Session 9-10: Character 3 - "Hardcore Holly" Type
-- [ ] Design: Technical wrestler, balanced stats
-- [ ] Generate 12 sprites
-- [ ] Add to characters.js
-- [ ] Add to BootScene.js
-- [ ] Playtest and balance
-
-### Session 11-12: Character 4 - "Big Show" Type
-- [ ] Design: Giant, slow but powerful
-- [ ] Generate 12 sprites
-- [ ] Code integration
-- [ ] Unique: Higher knockback, slower recovery
-
-### Session 13-14: Character 3 Grapple Moves
-- [ ] Generate 3 throw sprites (suplex, DDT, bodyslam)
-- [ ] Integrate animations
-
-### Session 15-16: Character 4 Grapple Moves
-- [ ] Generate 3 throw sprites
-- [ ] Integrate animations
-
-### Session 17-18: Character Select Screen
-- [ ] Character select UI
-- [ ] Character portraits (4)
-- [ ] Stats display
-- [ ] P1/P2 selection (for future 2P)
-- [ ] Confirm and start fight
-
-**Phase 2 Deliverable:** 4 unique characters with selection screen.
+| Character | Health | Speed | Attack | Defense | Play Style |
+|-----------|--------|-------|--------|---------|------------|
+| Dumpster | 100% | 0.9x | 1.1x | 1.1x | Power - slow but hits hard, takes less damage |
+| Scar | 100% | 1.1x | 1.0x | 0.9x | Speed - fast but fragile |
+| Blaze | 85% | 1.2x | 1.25x | 0.75x | Glass cannon - very fast, high damage, very fragile |
+| Tank | 120% | 0.75x | 1.3x | 1.25x | Tank - slow, devastating hits, very durable |
+| Viper | 100% | 1.0x | 1.0x | 1.0x | Balanced - all-rounder |
 
 ---
 
-## Phase 3: Arenas (Sessions 19-24)
+## Immediate Priority: Complete Character Animations
 
-**Goal:** 4 distinct fighting environments.
+### Missing Sprites (24 total)
 
-### Session 19-20: Arena 3 - Parking Lot
-- [ ] Outdoor night scene
-- [ ] Cars as background props
-- [ ] Street lights
-- [ ] Concrete floor bounds
+**For each of Blaze, Tank, Viper:**
+1. `{name}-chair.png` - Chair swing attack (4 frames)
+2. `{name}-getup.png` - Rising from knockdown (4 frames)
+3. `{name}-grapple.png` - Holding opponent in grapple (4 frames)
+4. `{name}-grappled.png` - Being held in grapple (4 frames)
+5. `{name}-throw.png` - Base throw initiation (4 frames)
+6. `{name}-throw-suplex.png` - Suplex execution (4 frames)
+7. `{name}-throw-ddt.png` - DDT execution (4 frames)
+8. `{name}-throw-bodyslam.png` - Bodyslam execution (4 frames)
 
-### Session 21-22: Arena 4 - Bar/Saloon
-- [ ] Indoor bar setting
-- [ ] Bottles and stools as props
-- [ ] Neon signs
-- [ ] Wooden floor
+**Sprite specs:** 128×128 per frame, 2×2 grid (256×256 total), PNG with transparency
 
-### Session 23-24: Arena Select + Props
-- [ ] Arena select screen
-- [ ] Arena preview images
-- [ ] Interactive props per arena (optional)
-- [ ] Arena-specific ambient sounds
+### Generation Workflow (per sprite)
 
-**Phase 3 Deliverable:** 4 arenas with selection screen.
+```bash
+# 1. Generate base image with Ludo
+Ludo createImage:
+  - Use character visual description from table above
+  - Specify exact pose/action
+  - Style: 16-bit pixel art, black outline
+
+# 2. Animate with Ludo
+Ludo animateSprite:
+  - frames: 4
+  - frame_size: 256
+  - duration: 2
+  - model: "standard"
+
+# 3. Process and save
+  - Verify transparency
+  - Save to public/assets/sprites/{character}-{action}.png
+```
 
 ---
 
-## Phase 4: Game Modes (Sessions 25-32)
+## Phase 1: Complete Characters (Sessions 1-4) ← CURRENT
+
+**Goal:** All 5 characters fully playable with complete animation sets.
+
+### Session 1-2: Blaze Animations
+- [ ] Generate 8 missing sprites for Blaze
+- [ ] Verify animations in BootScene.js (already defined, just need assets)
+- [ ] Playtest Blaze vs AI
+- [ ] Screenshot verification
+
+### Session 3-4: Tank & Viper Animations
+- [ ] Generate 8 missing sprites for Tank
+- [ ] Generate 8 missing sprites for Viper
+- [ ] Playtest all 5 characters
+- [ ] Balance pass if needed
+
+**Phase 1 Deliverable:** 5 fully animated, playable characters.
+
+---
+
+## Phase 2: Audio & Polish (Sessions 5-10) ✅ COMPLETE
+
+**Goal:** Wire up existing audio and add missing juice.
+
+### Session 5-6: Sound Integration ✅
+- [x] Wire sfx-hit to punch impacts
+- [x] Wire sfx-chair-hit to chair attacks
+- [x] Wire sfx-table-break to table destruction
+- [x] Wire crowd reactions to big hits
+- [x] Wire music to scenes (menu, fight, victory)
+- [x] Menu navigation and selection sounds
+
+### Session 7-8: Fire Visual Effects ✅
+- [x] Fire particle emitter on burning tables (continuous particles)
+- [ ] Add burning tint/particles to fighters on fire (deferred)
+- [ ] Smoke effects (deferred)
+
+### Session 9-10: Combat Juice ✅
+- [x] Screen shake on big hits
+- [x] Hit sparks/impact particles
+- [x] Slowmo on finishing blow
+- [x] Damage numbers (DamageNumbers.js integrated)
+
+**Phase 2 Deliverable:** Full audiovisual feedback loop. ✅
+
+---
+
+## Phase 3: Game Modes (Sessions 11-18) ✅ COMPLETE
 
 **Goal:** Multiple ways to play.
 
-### Session 25-26: Best of 3
-- [ ] Round system
-- [ ] Round win tracking
-- [ ] Round transition screen
-- [ ] "Round 1... FIGHT!" announcements
+### Session 11-12: Career Mode UI ✅
+- [x] Display chapter/story progression (CareerMenuScene)
+- [x] Dialogue/promo system (story events overlay)
+- [x] Rivalry visualization (roster viewer with rival indicator)
+- [x] PPV event screens (upcoming match panel)
 
-### Session 27-28: Survival Mode
-- [ ] Endless opponents
-- [ ] Health carries over (partial restore)
-- [ ] Score tracking
-- [ ] High score save (localStorage)
-- [ ] Difficulty ramp
+### Session 13-14: Best of 3 Mode ✅
+- [x] Round system (FightScene round tracking)
+- [x] Round win tracking (playerRoundWins/opponentRoundWins)
+- [x] "Round X... FIGHT!" announcements (showRoundAnnouncement)
 
-### Session 29-30: Hardcore Mode
-- [ ] Weapons spawn randomly
-- [ ] Multiple chairs and tables
-- [ ] Faster action
-- [ ] No DQ rules display
+### Session 15-16: Survival Mode ✅
+- [x] Endless opponents (continuous fights)
+- [x] Score tracking (survivalStreak)
+- [x] High score persistence (localStorage)
+- [x] Difficulty ramp (AI aggression increases with streak)
 
-### Session 31-32: Mode Select Screen
-- [ ] Mode selection UI
-- [ ] Mode descriptions
-- [ ] Mode-specific options
-- [ ] Flow: Menu → Mode → Character → Arena → Fight
+### Session 17-18: Mode & Arena Select ✅
+- [x] Mode select screen (MenuScene with 6 modes)
+- [x] Arena select screen (ArenaSelectScene with 5 arenas + random)
+- [x] Full flow: Menu → Mode → Character → Arena → Fight
 
-**Phase 4 Deliverable:** 4 game modes with proper menu flow.
+**Phase 3 Deliverable:** Multiple game modes with proper menu flow. ✅
 
 ---
 
-## Phase 5: Polish & Juice (Sessions 33-38)
+## Phase 4: Polish & Ship (Sessions 19-24)
 
-**Goal:** Make it feel like a real game.
-
-### Session 33-34: Visual Effects
-- [ ] Hit sparks/impact effects
-- [ ] Blood splatter (optional toggle)
-- [ ] Dust on landing
-- [ ] Screen flash on big hits
-- [ ] Slowmo on finishing blow
-
-### Session 35-36: Announcer System
-- [ ] "FIGHT!" voice
-- [ ] Move callouts ("SUPLEX!", "DDT!")
-- [ ] Health warnings ("He's hurt!")
-- [ ] Victory announcements
-- [ ] Generate with Ludo createVoice
-
-### Session 37-38: UI Polish
-- [ ] Animated health bars
-- [ ] Combo counter
-- [ ] Damage numbers (floating)
-- [ ] Better fonts
-- [ ] Loading screen
-
-**Phase 5 Deliverable:** Polished, juicy game feel.
-
----
-
-## Phase 6: Story Mode (Sessions 39-44)
-
-**Goal:** Single-player campaign.
-
-### Session 39-40: Story System
-- [ ] Chapter/fight progression
-- [ ] Dialogue system
-- [ ] Character portraits for dialogue
-- [ ] Save progress (localStorage)
-
-### Session 41-42: Story Content - Act 1
-- [ ] 3-4 fights with dialogue
-- [ ] Dumpster's story arc
-- [ ] Intro cutscene
-- [ ] Rival introduction
-
-### Session 43-44: Story Content - Act 2
-- [ ] 3-4 more fights
-- [ ] Final boss fight
-- [ ] Ending cutscene
-- [ ] Credits roll
-
-**Phase 6 Deliverable:** Complete story mode with 6-8 fights.
-
----
-
-## Phase 7: Final Polish (Sessions 45-50)
-
-**Goal:** Ship-ready quality.
-
-### Session 45-46: Local 2-Player
-- [ ] Player 2 controls (arrows + ZXC)
+### Session 19-20: Local 2-Player
+- [ ] Player 2 controls
 - [ ] 2P character select
-- [ ] Camera adjustments if needed
-- [ ] 2P UI (both health bars work)
+- [ ] 2P UI
 
-### Session 47-48: Settings & Accessibility
+### Session 21-22: Settings & Accessibility
 - [ ] Options menu
 - [ ] Volume controls
-- [ ] Control rebinding (optional)
 - [ ] Difficulty settings
-- [ ] Screen shake toggle
 
-### Session 49: Bug Bash
-- [ ] Full playthrough all modes
-- [ ] Fix any bugs found
+### Session 23-24: Launch Prep
+- [ ] Bug bash
 - [ ] Performance check
 - [ ] Mobile browser test
-
-### Session 50: Launch Prep
-- [ ] Final build
-- [ ] Deploy to Vercel/hosting
-- [ ] Screenshots for sharing
 - [ ] README update
+- [ ] Deploy to Vercel
 - [ ] v1.0 tag
 
-**Phase 7 Deliverable:** Shipped game! 🎉
+**Phase 4 Deliverable:** Shipped game! 🎉
 
 ---
 
-## Quick Reference: All Assets Needed
+## Quick Reference: Asset Status
 
-### Characters (4 total)
+### Characters (5 total)
 | Character | Sprites | Status |
 |-----------|---------|--------|
-| Dumpster | 12 | ✅ Done |
-| Scar | 12 | ✅ Done |
-| Character 3 | 12 | ⬜ TODO |
-| Character 4 | 12 | ⬜ TODO |
+| Dumpster | 14/14 | ✅ Complete |
+| Scar | 14/14 | ✅ Complete |
+| Blaze | 6/14 | 🟡 Missing 8 |
+| Tank | 6/14 | 🟡 Missing 8 |
+| Viper | 6/14 | 🟡 Missing 8 |
 
-**Total character sprites: 48**
-
-### Arenas (4 total)
+### Arenas (6+ exist)
 | Arena | Status |
 |-------|--------|
 | Warehouse | ✅ Done |
 | Basement | ✅ Done |
-| Parking Lot | ⬜ TODO |
-| Bar | ⬜ TODO |
+| Parking Lot | ✅ Asset exists |
+| Factory | ✅ Asset exists |
+| Alley | ✅ Asset exists |
+| Open/Empty variants | ✅ Assets exist |
 
-### Weapons (3 total)
-| Weapon | Sprites | Status |
-|--------|---------|--------|
-| Chair | 2 | 🟡 Partial |
-| Table | 3 | 🟡 Partial |
-| Ladder/Bat | 2 | ⬜ TODO |
+### Weapons
+| Weapon | Status |
+|--------|--------|
+| Chair | ✅ Fully functional |
+| Table | ✅ Fully functional with fire |
 
 ### Audio
-| Type | Count | Status |
-|------|-------|--------|
-| Music tracks | 3 | 🟡 1 done |
-| Hit SFX | 8 | ⬜ TODO |
-| Voice lines | 10 | ⬜ TODO |
-| Ambient | 4 | ⬜ TODO |
+| Type | Status |
+|------|--------|
+| All SFX | ✅ Loaded, 🟡 needs wiring |
+| Music | ✅ Loaded, 🟡 needs wiring |
 
 ### UI Screens
 | Screen | Status |
 |--------|--------|
 | Main Menu | ✅ Done |
-| Character Select | ⬜ TODO |
-| Arena Select | ⬜ TODO |
-| Mode Select | ⬜ TODO |
+| Title Screen | ✅ Done |
+| Character Select | ✅ Done |
+| Arena Select | ✅ Done |
+| Mode Select | ✅ Done (in Menu) |
 | Fight HUD | ✅ Done |
 | Pause | ✅ Done |
 | Game Over | ✅ Done |
-| Options | ⬜ TODO |
+| Options | ✅ Done |
+| Career Menu | ✅ Done |
 
 ---
 
-## Milestone Summary
+## Milestone Summary (Revised)
 
-| Milestone | Sessions | Deliverable |
-|-----------|----------|-------------|
-| Phase 1 | 1-8 | Weapons + Audio |
-| Phase 2 | 9-18 | 4 Characters |
-| Phase 3 | 19-24 | 4 Arenas |
-| Phase 4 | 25-32 | 4 Game Modes |
-| Phase 5 | 33-38 | Polish + Juice |
-| Phase 6 | 39-44 | Story Mode |
-| Phase 7 | 45-50 | Ship v1.0 |
+| Phase | Sessions | Deliverable | Status |
+|-------|----------|-------------|--------|
+| Phase 1 | 1-4 | 5 Complete Characters | 🟡 In Progress (24 sprites remaining) |
+| Phase 2 | 5-10 | Audio & Polish | ✅ Complete |
+| Phase 3 | 11-18 | Game Modes | ✅ Complete |
+| Phase 4 | 19-24 | Ship v1.0 | ⬜ TODO |
 
----
-
-## Daily Session Template
-
-```markdown
-## Session [N] - [Date]
-
-### Goal
-[One sentence goal]
-
-### Tasks
-- [ ] Task 1
-- [ ] Task 2
-- [ ] Task 3
-
-### Assets Created
-- sprite1.png
-- sprite2.png
-
-### Code Changed
-- file1.js
-- file2.js
-
-### Notes
-[Any issues, decisions, or ideas for later]
-
-### Tomorrow
-[What's next]
-```
-
----
-
-## Starting Tomorrow?
-
-**Recommended first session:** Phase 1, Session 1-2 (Weapons Complete)
-
-The chair code already exists but needs:
-1. Working pickup/drop
-2. Proper sprites
-3. Sound effect
-4. Testing
-
-This builds on existing code and gives immediate visible progress.
+**Estimated remaining:** ~10 sessions (Phase 1 sprites + Phase 4 polish)
