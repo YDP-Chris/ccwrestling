@@ -7,6 +7,7 @@ import CareerManager from '../systems/CareerManager.js';
 const MODES = {
   CAREER: { id: 'career', label: 'CAREER', desc: 'Rise from rookie to champion with storylines' },
   QUICK_MATCH: { id: 'quick', label: 'QUICK MATCH', desc: 'Jump right into the action' },
+  BEST_OF_3: { id: 'bestof3', label: 'BEST OF 3', desc: 'First to 2 round wins takes the match' },
   ARCADE: { id: 'arcade', label: 'ARCADE', desc: 'Fight through the roster' },
   SURVIVAL: { id: 'survival', label: 'SURVIVAL', desc: 'Endless fights, health carries over' },
   PRACTICE: { id: 'practice', label: 'PRACTICE', desc: 'Train your moves, AI won\'t attack' },
@@ -258,6 +259,7 @@ export default class MenuScene extends Phaser.Scene {
           this.startCareer();
           break;
         case 'quick':
+        case 'bestof3':
         case 'arcade':
         case 'survival':
         case 'practice':

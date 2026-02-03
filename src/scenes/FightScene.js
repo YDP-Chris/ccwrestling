@@ -50,6 +50,11 @@ export default class FightScene extends Phaser.Scene {
     this.replayData = data.replayData || null;
     this.replaySeed = data.replaySeed || null;
 
+    // Best of 3 mode round tracking
+    this.currentRound = data.currentRound || 1;
+    this.playerRoundWins = data.playerRoundWins || 0;
+    this.opponentRoundWins = data.opponentRoundWins || 0;
+
     // Load settings
     this.loadSettings();
   }
@@ -256,6 +261,83 @@ export default class FightScene extends Phaser.Scene {
   }
 
   startCountdownSequence() {
+    // For bestof3 mode, show round number first
+    if (this.gameMode === 'bestof3') {
+      this.showRoundAnnouncement(() => {
+        this.runCountdown();
+      });
+    } else {
+      this.runCountdown();
+    }
+  }
+
+  showRoundAnnouncement(onComplete) {
+    // Show round indicator and score
+    const roundText = this.add.text(
+      GAME.WIDTH / 2,
+      GAME.HEIGHT / 2 - 40,
+      `ROUND ${this.currentRound}`,
+      {
+        fontFamily: 'Arial Black',
+        fontSize: '48px',
+        color: '#FFD700',
+        stroke: '#000000',
+        strokeThickness: 6
+      }
+    );
+    roundText.setOrigin(0.5);
+    roundText.setDepth(2000);
+    roundText.setScale(0);
+
+    // Show score below
+    const scoreText = this.add.text(
+      GAME.WIDTH / 2,
+      GAME.HEIGHT / 2 + 20,
+      `${this.playerRoundWins} - ${this.opponentRoundWins}`,
+      {
+        fontFamily: 'Arial Black',
+        fontSize: '36px',
+        color: '#FFFFFF',
+        stroke: '#000000',
+        strokeThickness: 4
+      }
+    );
+    scoreText.setOrigin(0.5);
+    scoreText.setDepth(2000);
+    scoreText.setAlpha(0);
+
+    // Animate round text in
+    this.tweens.add({
+      targets: roundText,
+      scale: 1,
+      duration: 300,
+      ease: 'Back.easeOut'
+    });
+
+    // Fade in score
+    this.tweens.add({
+      targets: scoreText,
+      alpha: 1,
+      duration: 200,
+      delay: 200
+    });
+
+    // Fade out and continue
+    this.time.delayedCall(1200, () => {
+      this.tweens.add({
+        targets: [roundText, scoreText],
+        alpha: 0,
+        duration: 300,
+        onComplete: () => {
+          roundText.destroy();
+          scoreText.destroy();
+          onComplete();
+        }
+      });
+    });
+  }
+
+  runCountdown() {
     const countdownSequence = ['3', '2', '1', 'FIGHT!'];
     let index = 0;
 
@@ -544,6 +626,20 @@ export default class FightScene extends Phaser.Scene {
           color: '#FFD700'
         }).setOrigin(0.5);
       }
+    } else if (this.gameMode === 'bestof3') {
+      // Best of 3 mode - show round indicator
+      this.add.text(GAME.WIDTH / 2, 10, `ROUND ${this.currentRound}`, {
+        fontFamily: 'Arial Black',
+        fontSize: '12px',
+        color: '#FFD700'
+      }).setOrigin(0.5);
+
+      // Show round score
+      this.roundScoreText = this.add.text(GAME.WIDTH / 2, 26, `${this.playerRoundWins} - ${this.opponentRoundWins}`, {
+        fontFamily: 'Arial',
+        fontSize: '10px',
+        color: '#FFFFFF'
+      }).setOrigin(0.5);
     } else if (this.gameMode !== 'quick') {
       const modeLabels = {
         arcade: 'ARCADE',
@@ -678,6 +774,14 @@ export default class FightScene extends Phaser.Scene {
       this.winner.victory();
     });
 
+    // Handle Best of 3 mode
+    if (this.gameMode === 'bestof3') {
+      this.time.delayedCall(TIMING.KO_DELAY + 500, () => {
+        this.handleRoundEnd();
+      });
+      return;
+    }
+
     // Transition to game over
     this.time.delayedCall(TIMING.KO_DELAY + 500, () => {
       this.effectsManager.stopAllAudio();
@@ -769,6 +873,12 @@ export default class FightScene extends Phaser.Scene {
       console.log('[FightScene] Recording stopped. Inputs:', recording?.inputs?.length);
     }
 
+    // Handle Best of 3 mode round logic
+    if (this.gameMode === 'bestof3') {
+      this.handleRoundEnd();
+      return;
+    }
+
     // Transition to game over
     this.time.delayedCall(TIMING.KO_DELAY, () => {
       this.effectsManager.stopAllAudio();
@@ -785,6 +895,99 @@ export default class FightScene extends Phaser.Scene {
         isPPV: this.isPPV,
         isTitleMatch: this.isTitleMatch
       });
+    });
+  }
+
+  handleRoundEnd() {
+    const playerWonRound = this.winner === this.player;
+
+    // Update round wins
+    if (playerWonRound) {
+      this.playerRoundWins++;
+    } else {
+      this.opponentRoundWins++;
+    }
+
+    // Check for match winner (first to 2)
+    const matchWinner = this.playerRoundWins >= 2 ? 'player' :
+                        this.opponentRoundWins >= 2 ? 'opponent' : null;
+
+    // Show round result
+    const roundResultText = playerWonRound ? 'ROUND WIN!' : 'ROUND LOST';
+    const resultColor = playerWonRound ? '#00FF00' : '#FF0000';
+
+    this.time.delayedCall(1000, () => {
+      const resultDisplay = this.add.text(
+        GAME.WIDTH / 2,
+        GAME.HEIGHT / 2 - 30,
+        roundResultText,
+        {
+          fontFamily: 'Arial Black',
+          fontSize: '48px',
+          color: resultColor,
+          stroke: '#000000',
+          strokeThickness: 6
+        }
+      );
+      resultDisplay.setOrigin(0.5);
+      resultDisplay.setDepth(2000);
+
+      // Show updated score
+      const scoreDisplay = this.add.text(
+        GAME.WIDTH / 2,
+        GAME.HEIGHT / 2 + 30,
+        `${this.playerRoundWins} - ${this.opponentRoundWins}`,
+        {
+          fontFamily: 'Arial Black',
+          fontSize: '36px',
+          color: '#FFFFFF',
+          stroke: '#000000',
+          strokeThickness: 4
+        }
+      );
+      scoreDisplay.setOrigin(0.5);
+      scoreDisplay.setDepth(2000);
+
+      this.time.delayedCall(2000, () => {
+        resultDisplay.destroy();
+        scoreDisplay.destroy();
+
+        if (matchWinner) {
+          // Match is over - go to game over
+          this.effectsManager.stopAllAudio();
+          this.scene.start('GameOverScene', {
+            winner: matchWinner === 'player' ?
+              CHARACTERS[this.playerCharKey].name :
+              CHARACTERS[this.opponentCharKey].name,
+            playerWon: matchWinner === 'player',
+            recording: this.lastRecording,
+            mode: this.gameMode,
+            player: this.playerCharKey,
+            opponent: this.opponentCharKey,
+            playerHealth: this.player.health,
+            playerRoundWins: this.playerRoundWins,
+            opponentRoundWins: this.opponentRoundWins
+          });
+        } else {
+          // Continue to next round
+          this.startNextRound();
+        }
+      });
+    });
+  }
+
+  startNextRound() {
+    this.currentRound++;
+
+    // Restart the scene with preserved round data
+    this.effectsManager.stopAllAudio();
+    this.scene.restart({
+      mode: 'bestof3',
+      player: this.playerCharKey,
+      opponent: this.opponentCharKey,
+      currentRound: this.currentRound,
+      playerRoundWins: this.playerRoundWins,
+      opponentRoundWins: this.opponentRoundWins
     });
   }
 
