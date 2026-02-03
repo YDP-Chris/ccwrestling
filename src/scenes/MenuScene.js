@@ -226,7 +226,7 @@ export default class MenuScene extends Phaser.Scene {
     );
 
     // Play navigate sound
-    this.sound.play('sfx-menu-select', { volume: 0.3 });
+    this.sound.play('sfx-menu-navigate', { volume: 0.3 });
 
     this.updateSelection();
   }

@@ -309,7 +309,7 @@ export default class CharacterSelectScene extends Phaser.Scene {
       );
     }
 
-    this.sound.play('sfx-menu-select', { volume: 0.3 });
+    this.sound.play('sfx-menu-navigate', { volume: 0.3 });
     this.updateSelection();
   }
 

@@ -326,7 +326,7 @@ export default class OptionsScene extends Phaser.Scene {
       0,
       this.menuItems.length
     );
-    this.sound.play('sfx-menu-select', { volume: 0.3 });
+    this.sound.play('sfx-menu-navigate', { volume: 0.3 });
     this.updateDisplay();
   }
 
@@ -340,10 +340,10 @@ export default class OptionsScene extends Phaser.Scene {
         item.valueOptions.length
       );
       item.valueText.setText(item.displayOptions[item.currentIndex]);
-      this.sound.play('sfx-menu-select', { volume: 0.3 });
+      this.sound.play('sfx-menu-navigate', { volume: 0.3 });
     } else if (item.type === 'slider') {
       item.adjust(direction * 0.1);
-      this.sound.play('sfx-menu-select', { volume: 0.2 });
+      this.sound.play('sfx-menu-navigate', { volume: 0.2 });
 
       // Preview volume change
       if (this.selectedIndex === 2) {

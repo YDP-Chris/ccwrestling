@@ -34,6 +34,12 @@ export default class GameOverScene extends Phaser.Scene {
   }
 
   create() {
+    // Play victory music
+    if (this.cache.audio.exists('music-victory')) {
+      this.victoryMusic = this.sound.add('music-victory', { loop: true, volume: 0.4 });
+      this.victoryMusic.play();
+    }
+
     // Animated background
     this.add.rectangle(GAME.WIDTH / 2, GAME.HEIGHT / 2, GAME.WIDTH, GAME.HEIGHT, COLORS.VOID);
 
@@ -239,12 +245,14 @@ export default class GameOverScene extends Phaser.Scene {
 
       // Navigation
       if (event.keyCode === 87 || event.keyCode === 38) { // W or UP
+        const prev = this.selectedOption;
         this.selectedOption = Math.max(0, this.selectedOption - 1);
-        this.updateSelection();
+        if (prev !== this.selectedOption) this.updateSelection(true);
       }
       if (event.keyCode === 83 || event.keyCode === 40) { // S or DOWN
+        const prev = this.selectedOption;
         this.selectedOption = Math.min(this.options.length - 1, this.selectedOption + 1);
-        this.updateSelection();
+        if (prev !== this.selectedOption) this.updateSelection(true);
       }
       // Selection
       if (event.keyCode === 13 || event.keyCode === 32) { // ENTER or SPACE
@@ -264,6 +272,16 @@ export default class GameOverScene extends Phaser.Scene {
 
     const selected = this.options[this.selectedOption];
     if (!selected) return;
+
+    // Play select sound
+    if (this.cache.audio.exists('sfx-menu-select')) {
+      this.sound.play('sfx-menu-select', { volume: 0.5 });
+    }
+
+    // Stop victory music when leaving
+    if (this.victoryMusic && selected.action !== 'save') {
+      this.victoryMusic.stop();
+    }
 
     switch (selected.action) {
       case 'career-continue':
@@ -422,7 +440,10 @@ export default class GameOverScene extends Phaser.Scene {
     });
   }
 
-  updateSelection() {
+  updateSelection(playSound = false) {
+    if (playSound && this.cache.audio.exists('sfx-menu-navigate')) {
+      this.sound.play('sfx-menu-navigate', { volume: 0.3 });
+    }
     this.options.forEach((option, index) => {
       if (index === this.selectedOption) {
         option.text.setColor('#DC143C');
@@ -443,14 +464,16 @@ export default class GameOverScene extends Phaser.Scene {
     // Navigation
     if (Phaser.Input.Keyboard.JustDown(this.upKey) || Phaser.Input.Keyboard.JustDown(this.wKey) ||
         mobile.justPressed('up')) {
+      const prev = this.selectedOption;
       this.selectedOption = Math.max(0, this.selectedOption - 1);
-      this.updateSelection();
+      if (prev !== this.selectedOption) this.updateSelection(true);
     }
 
     if (Phaser.Input.Keyboard.JustDown(this.downKey) || Phaser.Input.Keyboard.JustDown(this.sKey) ||
         mobile.justPressed('down')) {
+      const prev = this.selectedOption;
       this.selectedOption = Math.min(this.options.length - 1, this.selectedOption + 1);
-      this.updateSelection();
+      if (prev !== this.selectedOption) this.updateSelection(true);
     }
 
     // Selection with Enter, Space, or Attack button
