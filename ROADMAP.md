@@ -6,33 +6,34 @@
 
 ---
 
-## Current State (v0.7) - Updated 2026-02-03
+## Current State (v0.9) - Updated 2026-02-03
 
 ### Done ✅
 - [x] Core fighting mechanics (movement, punch, hitstun, knockdown)
 - [x] 5 characters defined (Dumpster, Scar, Blaze, Tank, Viper)
-- [x] 2 fully animated characters (Dumpster, Scar - all 14 sprites)
-- [x] 3 partially animated characters (Blaze, Tank, Viper - 6/14 sprites each)
-- [x] 4+ arenas (Warehouse, Basement, Parking Lot, Factory, Alley variants)
+- [x] 5 fully animated characters (all 14 sprites each - 70 total)
+- [x] 5+ arenas (Warehouse, Basement, Boiler Room, Factory, Parking Lot)
 - [x] Grapple system with 4 throws (suplex, DDT, bodyslam, base throw)
 - [x] Health bars and Extreme meter
 - [x] AI opponent with weapon awareness
 - [x] Menu, Title, and Game Over screens
 - [x] Character Select screen (functional)
+- [x] Arena Select screen (functional)
 - [x] Unit tests (61+ grapple tests, replay tests)
 - [x] Replay system with seeded RNG
 - [x] Pause functionality
 - [x] Chair weapon (pickup, swing, breaks after 3 hits, debris particles)
 - [x] Table weapon (placement, break mechanics, fire state)
 - [x] Fire mechanic (ignite table, DOT 3dmg × 6 ticks)
-- [x] Career mode data structure (5 chapters, 6 PPVs, rivalry system)
+- [x] Career mode (5 chapters, 6 PPVs, rivalry system, full UI)
 - [x] Stats tracking system
 - [x] Transition manager for scene changes
-- [x] All SFX loaded (hit, chair, table, fire, crowd, menu, KO, music)
+- [x] All SFX wired and playing (hit, chair, table, fire, crowd, menu, KO, music)
+- [x] Best of 3 mode with round system
+- [x] Survival mode with streak tracking and difficulty ramp
 
 ### Partially Done 🟡
-- [ ] 3 characters need remaining 8 animations each (Blaze, Tank, Viper)
-- [ ] Fire visual effects on burning fighters
+- [ ] Fire visual effects on burning fighters (deferred)
 
 ---
 
@@ -54,11 +55,11 @@
 |-----------|------|------|-------|-----|------|---------|-------|-------|---------|----------|-------|--------------|-----------|----------------|
 | Dumpster | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Scar | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Blaze | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Tank | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Viper | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Blaze | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Tank | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Viper | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 
-**Total sprites needed:** 24 (8 per incomplete character × 3 characters)
+**All 70 sprites complete!** (14 per character × 5 characters)
 
 ### Character Stats
 
@@ -72,62 +73,21 @@
 
 ---
 
-## Immediate Priority: Complete Character Animations
-
-### Missing Sprites (24 total)
-
-**For each of Blaze, Tank, Viper:**
-1. `{name}-chair.png` - Chair swing attack (4 frames)
-2. `{name}-getup.png` - Rising from knockdown (4 frames)
-3. `{name}-grapple.png` - Holding opponent in grapple (4 frames)
-4. `{name}-grappled.png` - Being held in grapple (4 frames)
-5. `{name}-throw.png` - Base throw initiation (4 frames)
-6. `{name}-throw-suplex.png` - Suplex execution (4 frames)
-7. `{name}-throw-ddt.png` - DDT execution (4 frames)
-8. `{name}-throw-bodyslam.png` - Bodyslam execution (4 frames)
-
-**Sprite specs:** 128×128 per frame, 2×2 grid (256×256 total), PNG with transparency
-
-### Generation Workflow (per sprite)
-
-```bash
-# 1. Generate base image with Ludo
-Ludo createImage:
-  - Use character visual description from table above
-  - Specify exact pose/action
-  - Style: 16-bit pixel art, black outline
-
-# 2. Animate with Ludo
-Ludo animateSprite:
-  - frames: 4
-  - frame_size: 256
-  - duration: 2
-  - model: "standard"
-
-# 3. Process and save
-  - Verify transparency
-  - Save to public/assets/sprites/{character}-{action}.png
-```
-
----
-
-## Phase 1: Complete Characters (Sessions 1-4) ← CURRENT
+## Phase 1: Complete Characters (Sessions 1-4) ✅ COMPLETE
 
 **Goal:** All 5 characters fully playable with complete animation sets.
 
-### Session 1-2: Blaze Animations
-- [ ] Generate 8 missing sprites for Blaze
-- [ ] Verify animations in BootScene.js (already defined, just need assets)
-- [ ] Playtest Blaze vs AI
-- [ ] Screenshot verification
+### Session 1-2: Blaze Animations ✅
+- [x] Generate 8 missing sprites for Blaze
+- [x] Verify animations in BootScene.js
+- [x] Playtest Blaze vs AI
 
-### Session 3-4: Tank & Viper Animations
-- [ ] Generate 8 missing sprites for Tank
-- [ ] Generate 8 missing sprites for Viper
-- [ ] Playtest all 5 characters
-- [ ] Balance pass if needed
+### Session 3-4: Tank & Viper Animations ✅
+- [x] Generate 8 missing sprites for Tank
+- [x] Generate 8 missing sprites for Viper
+- [x] Playtest all 5 characters
 
-**Phase 1 Deliverable:** 5 fully animated, playable characters.
+**Phase 1 Deliverable:** 5 fully animated, playable characters. ✅
 
 ---
 
@@ -219,9 +179,9 @@ Ludo animateSprite:
 |-----------|---------|--------|
 | Dumpster | 14/14 | ✅ Complete |
 | Scar | 14/14 | ✅ Complete |
-| Blaze | 6/14 | 🟡 Missing 8 |
-| Tank | 6/14 | 🟡 Missing 8 |
-| Viper | 6/14 | 🟡 Missing 8 |
+| Blaze | 14/14 | ✅ Complete |
+| Tank | 14/14 | ✅ Complete |
+| Viper | 14/14 | ✅ Complete |
 
 ### Arenas (6+ exist)
 | Arena | Status |
@@ -242,8 +202,8 @@ Ludo animateSprite:
 ### Audio
 | Type | Status |
 |------|--------|
-| All SFX | ✅ Loaded, 🟡 needs wiring |
-| Music | ✅ Loaded, 🟡 needs wiring |
+| All SFX | ✅ Wired and playing |
+| Music | ✅ Wired and playing |
 
 ### UI Screens
 | Screen | Status |
@@ -265,9 +225,9 @@ Ludo animateSprite:
 
 | Phase | Sessions | Deliverable | Status |
 |-------|----------|-------------|--------|
-| Phase 1 | 1-4 | 5 Complete Characters | 🟡 In Progress (24 sprites remaining) |
+| Phase 1 | 1-4 | 5 Complete Characters | ✅ Complete |
 | Phase 2 | 5-10 | Audio & Polish | ✅ Complete |
 | Phase 3 | 11-18 | Game Modes | ✅ Complete |
 | Phase 4 | 19-24 | Ship v1.0 | ⬜ TODO |
 
-**Estimated remaining:** ~10 sessions (Phase 1 sprites + Phase 4 polish)
+**Estimated remaining:** ~6 sessions (Phase 4: 2P, settings, polish, ship)
