@@ -60,19 +60,23 @@ export default class Table extends Phaser.GameObjects.Sprite {
     this.setTint(0xFF6600);
 
     // Create fire particles if effects manager exists
-    this.scene.events.emit('table-ignited', this);
+    if (this.scene && this.scene.events) {
+      this.scene.events.emit('table-ignited', this);
+    }
 
     // Pulse effect using scale
-    const baseX = this.scaleX;
-    const baseY = this.scaleY;
-    this.scene.tweens.add({
-      targets: this,
-      scaleX: baseX * 1.05,
-      scaleY: baseY * 1.05,
-      duration: 200,
-      yoyo: true,
-      repeat: -1
-    });
+    if (this.scene && this.scene.tweens) {
+      const baseX = this.scaleX;
+      const baseY = this.scaleY;
+      this.scene.tweens.add({
+        targets: this,
+        scaleX: baseX * 1.05,
+        scaleY: baseY * 1.05,
+        duration: 200,
+        yoyo: true,
+        repeat: -1
+      });
+    }
 
     return true;
   }
@@ -97,19 +101,23 @@ export default class Table extends Phaser.GameObjects.Sprite {
     this.body.enable = false;
 
     // Emit break event
-    this.scene.events.emit('table-broken', this, wasOnFire);
+    if (this.scene && this.scene.events) {
+      this.scene.events.emit('table-broken', this, wasOnFire);
+    }
 
     // Fade out and destroy
-    this.scene.tweens.add({
-      targets: this,
-      alpha: 0.5,
-      y: this.y + 10,
-      duration: 500,
-      onComplete: () => {
-        // Leave debris on ground
-        this.setAlpha(0.3);
-      }
-    });
+    if (this.scene && this.scene.tweens) {
+      this.scene.tweens.add({
+        targets: this,
+        alpha: 0.5,
+        y: this.y + 10,
+        duration: 500,
+        onComplete: () => {
+          // Leave debris on ground
+          if (this.setAlpha) this.setAlpha(0.3);
+        }
+      });
+    }
   }
 
   isIntact() {

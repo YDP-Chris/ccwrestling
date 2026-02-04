@@ -72,9 +72,13 @@ export default class Chair extends Phaser.GameObjects.Sprite {
 
     // Visual feedback - flash
     this.setTint(0xffff00);
-    this.scene.time.delayedCall(50, () => {
-      this.clearTint();
-    });
+    if (this.scene && this.scene.time) {
+      this.scene.time.delayedCall(50, () => {
+        // Safety check - scene may be transitioning when timer fires
+        if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
+        if (this.clearTint) this.clearTint();
+      });
+    }
 
     if (this.hitCount >= CHAIR_MAX_HITS) {
       this.break();
@@ -97,19 +101,24 @@ export default class Chair extends Phaser.GameObjects.Sprite {
     }
 
     // Spawn debris particles
-    const particles = this.scene.add.particles(this.x, this.y, 'chair-ground', {
-      speed: { min: 100, max: 200 },
-      angle: { min: 0, max: 360 },
-      scale: { start: 0.3, end: 0 },
-      lifespan: 500,
-      gravityY: 300,
-      quantity: 6
-    });
+    if (this.scene && this.scene.add) {
+      const particles = this.scene.add.particles(this.x, this.y, 'chair-ground', {
+        speed: { min: 100, max: 200 },
+        angle: { min: 0, max: 360 },
+        scale: { start: 0.3, end: 0 },
+        lifespan: 500,
+        gravityY: 300,
+        quantity: 6
+      });
 
-    // Auto-destroy particles
-    this.scene.time.delayedCall(600, () => {
-      particles.destroy();
-    });
+      // Auto-destroy particles
+      if (this.scene.time) {
+        this.scene.time.delayedCall(600, () => {
+          // Safety check - scene may be transitioning when timer fires
+          if (particles && particles.destroy) particles.destroy();
+        });
+      }
+    }
 
     // Screen shake
     if (this.scene.effectsManager) {
