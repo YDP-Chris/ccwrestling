@@ -53,11 +53,17 @@ export default class ComboCounter {
   }
 
   onHit(data) {
+    // Safety check - scene may be transitioning
+    if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
+
     const { attacker, target, damage } = data;
     this.incrementCombo(attacker, target);
   }
 
   onThrow(data) {
+    // Safety check - scene may be transitioning
+    if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
+
     const { attacker, target } = data;
     // Throws count as 2 hits for combo purposes
     this.incrementCombo(attacker, target);
@@ -81,6 +87,8 @@ export default class ComboCounter {
 
     // Set new timeout to reset combo
     const timer = this.scene.time.delayedCall(this.comboTimeout, () => {
+      // Safety check - scene may be transitioning when timer fires
+      if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
       this.combos.set(attacker, 0);
       this.hideComboDisplay(attacker);
     });
@@ -104,9 +112,16 @@ export default class ComboCounter {
   updateComboDisplay(fighter, count) {
     if (count < 2) return; // Only show combos of 2+
 
+    // Safety checks
+    if (!this.scene || !this.scene.player) return;
+    if (!this.playerComboDisplay || !this.enemyComboDisplay) return;
+
     // Determine which display to use
     const isPlayer = fighter === this.scene.player;
     const display = isPlayer ? this.playerComboDisplay : this.enemyComboDisplay;
+
+    // Safety check - display may be destroyed
+    if (!display.container || !display.countText) return;
 
     // Update count
     display.countText.setText(count.toString());
@@ -134,8 +149,15 @@ export default class ComboCounter {
   }
 
   hideComboDisplay(fighter) {
+    // Safety checks
+    if (!this.scene || !this.scene.tweens) return;
+    if (!this.playerComboDisplay || !this.enemyComboDisplay) return;
+
     const isPlayer = fighter === this.scene.player;
     const display = isPlayer ? this.playerComboDisplay : this.enemyComboDisplay;
+
+    // Safety check - container may be destroyed
+    if (!display.container) return;
 
     this.scene.tweens.add({
       targets: display.container,
@@ -145,6 +167,9 @@ export default class ComboCounter {
   }
 
   announceCombo(text, color) {
+    // Safety check - scene may be transitioning
+    if (!this.scene || !this.scene.add || !this.scene.tweens) return;
+
     const colorHex = typeof color === 'number'
       ? `#${color.toString(16).padStart(6, '0')}`
       : color;
@@ -185,15 +210,24 @@ export default class ComboCounter {
   }
 
   destroy() {
-    this.scene.events.off('combat-hit', this.onHit, this);
-    this.scene.events.off('combat-grapple-throw', this.onThrow, this);
+    // Remove event listeners
+    if (this.scene && this.scene.events) {
+      this.scene.events.off('combat-hit', this.onHit, this);
+      this.scene.events.off('combat-grapple-throw', this.onThrow, this);
+    }
 
     // Clear timers
-    this.comboTimers.forEach(timer => timer.destroy());
+    this.comboTimers.forEach(timer => {
+      if (timer && timer.destroy) timer.destroy();
+    });
     this.comboTimers.clear();
 
     // Destroy displays
-    this.playerComboDisplay.container.destroy();
-    this.enemyComboDisplay.container.destroy();
+    if (this.playerComboDisplay && this.playerComboDisplay.container) {
+      this.playerComboDisplay.container.destroy();
+    }
+    if (this.enemyComboDisplay && this.enemyComboDisplay.container) {
+      this.enemyComboDisplay.container.destroy();
+    }
   }
 }
