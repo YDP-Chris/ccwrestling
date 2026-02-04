@@ -70,6 +70,9 @@ export default class CombatSystem {
   }
 
   handleAttack(attacker) {
+    // Safety check - scene may be transitioning
+    if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
+
     // Find potential targets
     const targets = this.fighters.filter(f => f !== attacker);
 
@@ -179,10 +182,15 @@ export default class CombatSystem {
   }
 
   hitFreeze(duration) {
+    // Safety check
+    if (!this.scene || !this.scene.physics || !this.scene.time) return;
+
     // Brief pause to emphasize impact
     this.scene.physics.pause();
     this.scene.time.delayedCall(duration, () => {
-      if (!this.scene.isPaused) {
+      // Safety check - scene may be transitioning when timer fires
+      if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
+      if (!this.scene.isPaused && this.scene.physics) {
         this.scene.physics.resume();
       }
     });
@@ -198,6 +206,9 @@ export default class CombatSystem {
   }
 
   handleTableSlam(attacker) {
+    // Safety check - scene may be transitioning
+    if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
+
     // Check for nearby table
     const table = this.findNearbyTable(attacker);
     if (!table) return;
@@ -297,6 +308,9 @@ export default class CombatSystem {
   }
 
   handleGrappleInitiate(attacker) {
+    // Safety check - scene may be transitioning
+    if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
+
     console.log('CombatSystem.handleGrappleInitiate called');
 
     // Check if attacker can grapple
@@ -363,8 +377,10 @@ export default class CombatSystem {
       attacker.setTint(0xffff00);
       target.setTint(0xff6600);
       this.scene.time.delayedCall(100, () => {
-        attacker.clearTint();
-        target.clearTint();
+        // Safety check - scene may be transitioning when timer fires
+        if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
+        if (attacker && attacker.clearTint) attacker.clearTint();
+        if (target && target.clearTint) target.clearTint();
       });
 
       // Emit grapple start event for effects
@@ -391,6 +407,9 @@ export default class CombatSystem {
   }
 
   handleGrappleThrow(attacker, target, moveName, damage) {
+    // Safety check - scene may be transitioning
+    if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
+
     // Apply damage to target
     target.receiveThrow(damage, attacker);
 
@@ -405,10 +424,12 @@ export default class CombatSystem {
   }
 
   destroy() {
-    this.scene.events.off('fighter-attack', this.handleAttack, this);
-    this.scene.events.off('fighter-table-slam', this.handleTableSlam, this);
-    this.scene.events.off('fighter-grapple-initiate', this.handleGrappleInitiate, this);
-    this.scene.events.off('fighter-grapple-throw', this.handleGrappleThrow, this);
+    if (this.scene && this.scene.events) {
+      this.scene.events.off('fighter-attack', this.handleAttack, this);
+      this.scene.events.off('fighter-table-slam', this.handleTableSlam, this);
+      this.scene.events.off('fighter-grapple-initiate', this.handleGrappleInitiate, this);
+      this.scene.events.off('fighter-grapple-throw', this.handleGrappleThrow, this);
+    }
     this.fighters = [];
   }
 }

@@ -270,8 +270,11 @@ export default class EffectsManager {
   // === VISUAL EFFECTS ===
   flashSprite(sprite, color = COLORS.BLOOD_BRIGHT, duration = 100) {
     if (!sprite || !sprite.active) return;
+    if (!this.scene || !this.scene.time) return;
     sprite.setTint(color);
     this.scene.time.delayedCall(duration, () => {
+      // Safety check - scene may be transitioning when timer fires
+      if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
       if (sprite && sprite.active) {
         sprite.clearTint();
       }
@@ -279,6 +282,9 @@ export default class EffectsManager {
   }
 
   showAnnouncement(text, color = COLORS.BLOOD_BRIGHT, duration = 1500, fontSize = '48px') {
+    // Safety check
+    if (!this.scene || !this.scene.add || !this.scene.tweens) return;
+
     const colorHex = typeof color === 'number'
       ? `#${color.toString(16).padStart(6, '0')}`
       : color;
@@ -323,6 +329,9 @@ export default class EffectsManager {
 
   // === EVENT HANDLERS ===
   onCombatHit(hitData) {
+    // Safety check - scene may be transitioning
+    if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
+
     const { target, isWeaponHit, position, comboCount = 1 } = hitData;
 
     // Play sound
@@ -354,6 +363,9 @@ export default class EffectsManager {
   }
 
   onCombo(comboData) {
+    // Safety check - scene may be transitioning
+    if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
+
     const { comboCount, comboMultiplier, position } = comboData;
 
     // Show combo counter above target
@@ -370,6 +382,9 @@ export default class EffectsManager {
   }
 
   showComboCounter(count, multiplier, x, y) {
+    // Safety check
+    if (!this.scene || !this.scene.add || !this.scene.tweens) return;
+
     // Color based on combo length
     let color = '#FFFF00'; // Yellow for 2-hit
     if (count >= 3) color = '#FFA500'; // Orange for 3-hit
@@ -429,6 +444,9 @@ export default class EffectsManager {
   }
 
   onComboEnd(data) {
+    // Safety check - scene may be transitioning
+    if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
+
     const { fighter, finalCount } = data;
 
     // Big combo ender announcement
@@ -439,6 +457,9 @@ export default class EffectsManager {
   }
 
   onTableSlam(data) {
+    // Safety check - scene may be transitioning
+    if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
+
     const { target, table, wasOnFire } = data;
 
     // Sound
@@ -464,6 +485,9 @@ export default class EffectsManager {
   }
 
   onFinisher(data) {
+    // Safety check - scene may be transitioning
+    if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
+
     const { target, attacker } = data;
 
     // Sound
@@ -484,13 +508,20 @@ export default class EffectsManager {
     this.showAnnouncement(callout, COLORS.FIRE_ORANGE, 2000, '72px');
 
     // Slow motion effect
-    this.scene.time.timeScale = 0.3;
-    this.scene.time.delayedCall(500, () => {
-      this.scene.time.timeScale = 1;
-    });
+    if (this.scene.time) {
+      this.scene.time.timeScale = 0.3;
+      this.scene.time.delayedCall(500, () => {
+        // Safety check - scene may be transitioning when timer fires
+        if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
+        if (this.scene.time) this.scene.time.timeScale = 1;
+      });
+    }
   }
 
   onFighterDamaged(fighter, damage, attacker) {
+    // Safety check - scene may be transitioning
+    if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
+
     // Track health for comeback detection
     const prevHealth = this.healthTracking.get(fighter) || fighter.maxHealth;
     const currentHealth = fighter.health;
@@ -531,11 +562,17 @@ export default class EffectsManager {
   }
 
   onFighterBurning(fighter) {
+    // Safety check - scene may be transitioning
+    if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
+
     this.spawnFire(fighter.x, fighter.y - 20, 3);
     this.flashSprite(fighter, COLORS.FIRE_ORANGE, 150);
   }
 
   onFighterKO(fighter) {
+    // Safety check - scene may be transitioning
+    if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
+
     // KO sound
     this.playSound('sfx-ko', 0.8);
     this.playSound('sfx-body-fall', 0.6);
@@ -561,6 +598,9 @@ export default class EffectsManager {
   }
 
   onTableIgnited(table) {
+    // Safety check - scene may be transitioning
+    if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
+
     this.playSound('sfx-fire-ignite', 0.6);
     const callout = this.getRandomCallout('fireStart');
     this.showAnnouncement(callout, COLORS.FIRE_ORANGE, 800, '36px');
@@ -576,19 +616,26 @@ export default class EffectsManager {
 
     // Start continuous fire particles on table
     this.burningTable = table;
-    this.fireParticleTimer = this.scene.time.addEvent({
-      delay: 150,
-      callback: () => {
-        if (this.burningTable && this.burningTable.isOnFire()) {
-          this.spawnFire(this.burningTable.x + Phaser.Math.Between(-40, 40),
-                        this.burningTable.y - 20, 3);
-        }
-      },
-      loop: true
-    });
+    if (this.scene.time) {
+      this.fireParticleTimer = this.scene.time.addEvent({
+        delay: 150,
+        callback: () => {
+          // Safety check - scene may be transitioning when timer fires
+          if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
+          if (this.burningTable && this.burningTable.isOnFire()) {
+            this.spawnFire(this.burningTable.x + Phaser.Math.Between(-40, 40),
+                          this.burningTable.y - 20, 3);
+          }
+        },
+        loop: true
+      });
+    }
   }
 
   onTableBroken(table, wasOnFire) {
+    // Safety check - scene may be transitioning
+    if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
+
     this.playSound('sfx-table-break', 0.7);
     this.spawnDebris(table.x, table.y, 20);
 
@@ -613,6 +660,9 @@ export default class EffectsManager {
   }
 
   onWeaponPickup(fighter, weapon) {
+    // Safety check - scene may be transitioning
+    if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
+
     this.playSound('sfx-chair-pickup', 0.5);
     this.flashSprite(weapon, COLORS.CHROME, 200);
 
@@ -624,6 +674,9 @@ export default class EffectsManager {
   }
 
   onGrappleStart(data) {
+    // Safety check - scene may be transitioning
+    if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
+
     const { attacker, target } = data;
 
     // Play grapple sound
@@ -643,6 +696,9 @@ export default class EffectsManager {
   }
 
   onGrappleThrowEffect(data) {
+    // Safety check - scene may be transitioning
+    if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
+
     const { attacker, target, moveName, damage, position } = data;
 
     // Play impact sound
@@ -664,12 +720,19 @@ export default class EffectsManager {
     this.playCrowdReaction(true);
 
     // Dust/debris at landing spot
-    this.scene.time.delayedCall(300, () => {
-      this.spawnDebris(target.x, target.y + 30, 8);
-    });
+    if (this.scene.time) {
+      this.scene.time.delayedCall(300, () => {
+        // Safety check - scene may be transitioning when timer fires
+        if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
+        if (target) this.spawnDebris(target.x, target.y + 30, 8);
+      });
+    }
   }
 
   onGrappleEscape(fighter, attacker) {
+    // Safety check - scene may be transitioning
+    if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
+
     // Play escape sound
     this.playSound('sfx-hit', 0.3);
 
@@ -704,6 +767,7 @@ export default class EffectsManager {
     this.stopAllAudio();
 
     // Remove event listeners
+    if (!this.scene || !this.scene.events) return;
     this.scene.events.off('combat-hit', this.onCombatHit, this);
     this.scene.events.off('combat-combo', this.onCombo, this);
     this.scene.events.off('combat-combo-end', this.onComboEnd, this);
