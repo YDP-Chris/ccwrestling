@@ -1,5 +1,84 @@
 import { HEALTH, MOVEMENT } from './constants.js';
 
+// AI personality profiles for each character
+export const AI_PROFILES = {
+  DUMPSTER: {
+    aggressiveness: 0.5,       // Methodical, not rushing
+    thinkInterval: 600,        // Slower decision making
+    attackCooldown: 1200,      // Deliberate attacks
+    retreatHealthThreshold: 0.2, // Fights until badly hurt
+    weights: {
+      approach: 0.25,
+      attack: 0.20,
+      retreat: 0.10,
+      seekWeapon: 0.25,        // Loves weapons
+      seekTable: 0.10,
+      grapple: 0.10
+    },
+    personality: 'brawler'      // Seeks weapons, trades hits
+  },
+  SCAR: {
+    aggressiveness: 0.7,
+    thinkInterval: 400,        // Quick decisions
+    attackCooldown: 700,       // Fast attacks
+    retreatHealthThreshold: 0.4, // Retreats early
+    weights: {
+      approach: 0.30,
+      attack: 0.30,
+      retreat: 0.20,           // Hit and run
+      seekWeapon: 0.05,
+      seekTable: 0.05,
+      grapple: 0.10
+    },
+    personality: 'hitAndRun'    // Strike and back off
+  },
+  BLAZE: {
+    aggressiveness: 0.9,       // Hyper aggressive
+    thinkInterval: 300,        // Very fast decisions
+    attackCooldown: 500,       // Rapid attacks
+    retreatHealthThreshold: 0.15, // Never retreats
+    weights: {
+      approach: 0.40,
+      attack: 0.40,
+      retreat: 0.05,           // Rarely retreats
+      seekWeapon: 0.05,
+      seekTable: 0.05,
+      grapple: 0.05
+    },
+    personality: 'rushdown'     // All offense, no defense
+  },
+  TANK: {
+    aggressiveness: 0.6,
+    thinkInterval: 700,        // Slow and steady
+    attackCooldown: 1400,      // Heavy, slow attacks
+    retreatHealthThreshold: 0.1, // Almost never retreats
+    weights: {
+      approach: 0.35,
+      attack: 0.20,
+      retreat: 0.05,           // Walks you down
+      seekWeapon: 0.10,
+      seekTable: 0.10,
+      grapple: 0.20            // Grapple heavy
+    },
+    personality: 'grappler'     // Closes distance, grabs you
+  },
+  VIPER: {
+    aggressiveness: 0.65,
+    thinkInterval: 450,
+    attackCooldown: 800,
+    retreatHealthThreshold: 0.3,
+    weights: {
+      approach: 0.30,
+      attack: 0.25,
+      retreat: 0.15,
+      seekWeapon: 0.10,
+      seekTable: 0.10,
+      grapple: 0.10
+    },
+    personality: 'adaptive'     // Balanced, reads opponent
+  }
+};
+
 export const CHARACTERS = {
   DUMPSTER: {
     name: 'Dumpster',
@@ -44,8 +123,8 @@ export const CHARACTERS = {
     hitboxHeight: 54,
     hitboxOffsetX: 14,
     hitboxOffsetY: 5,
-    attackPower: 1.0,
-    defense: 0.9, // Takes more damage
+    attackPower: 1.05, // Slight damage boost
+    defense: 0.95, // Slightly fragile (was 0.9)
     animations: {
       idle: 'scar-idle',
       walk: 'scar-walk',
@@ -68,7 +147,7 @@ export const CHARACTERS = {
   BLAZE: {
     name: 'Blaze',
     spriteKey: 'blaze',
-    health: HEALTH.MAX * 0.85, // Glass cannon - less health
+    health: HEALTH.MAX * 0.9, // Glass cannon - less health (was 0.85)
     speed: MOVEMENT.SPEED * 1.2, // Very fast
     width: 64,
     height: 64,
@@ -76,8 +155,8 @@ export const CHARACTERS = {
     hitboxHeight: 52,
     hitboxOffsetX: 15,
     hitboxOffsetY: 6,
-    attackPower: 1.25, // High damage
-    defense: 0.75, // Takes more damage
+    attackPower: 1.2, // High damage (was 1.25)
+    defense: 0.8, // Takes more damage (was 0.75)
     animations: {
       idle: 'blaze-idle',
       walk: 'blaze-walk',
@@ -99,16 +178,16 @@ export const CHARACTERS = {
   TANK: {
     name: 'Tank',
     spriteKey: 'tank',
-    health: HEALTH.MAX * 1.2, // Extra health
-    speed: MOVEMENT.SPEED * 0.75, // Slow
+    health: HEALTH.MAX * 1.15, // Extra health (was 1.2)
+    speed: MOVEMENT.SPEED * 0.8, // Slow but playable (was 0.75)
     width: 64,
     height: 64,
     hitboxWidth: 48,
     hitboxHeight: 58,
     hitboxOffsetX: 8,
     hitboxOffsetY: 3,
-    attackPower: 1.3, // Devastating hits
-    defense: 1.25, // Tanky
+    attackPower: 1.25, // Devastating hits (was 1.3)
+    defense: 1.2, // Tanky (was 1.25)
     animations: {
       idle: 'tank-idle',
       walk: 'tank-walk',

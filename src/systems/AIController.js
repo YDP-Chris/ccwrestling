@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { COMBAT, FIGHTER_STATES, GRAPPLE } from '../config/constants.js';
+import { AI_PROFILES } from '../config/characters.js';
 
 const AI_STATES = {
   IDLE: 'idle',
@@ -17,31 +18,49 @@ export default class AIController {
     this.fighter = fighter;
     this.target = target;
 
-    // AI parameters
-    this.aggressiveness = options.aggressiveness || 0.6;
-    this.thinkInterval = options.thinkInterval || 500;
-    this.attackRange = options.attackRange || 55;
-    this.retreatHealthThreshold = options.retreatHealthThreshold || 0.3;
+    // Load character-specific AI profile
+    const characterKey = fighter.config?.spriteKey?.toUpperCase() || 'VIPER';
+    const profile = AI_PROFILES[characterKey] || AI_PROFILES.VIPER;
+
+    // AI parameters from profile (options can override)
+    this.aggressiveness = options.aggressiveness ?? profile.aggressiveness;
+    this.thinkInterval = options.thinkInterval ?? profile.thinkInterval;
+    this.attackRange = options.attackRange || 90; // Updated for new ranges
+    this.retreatHealthThreshold = options.retreatHealthThreshold ?? profile.retreatHealthThreshold;
+    this.personality = profile.personality;
 
     // State
     this.aiState = AI_STATES.IDLE;
     this.lastThinkTime = 0;
     this.lastAttackTime = 0;
-    this.attackCooldown = options.attackCooldown || 1000;  // Use option or default
+    this.attackCooldown = options.attackCooldown ?? profile.attackCooldown;
 
-    // Decision weights
-    this.weights = {
-      approach: 0.35,
-      attack: 0.25,
-      retreat: 0.15,
-      seekWeapon: 0.1,
-      seekTable: 0.05,
-      grapple: 0.1
-    };
+    // Decision weights from profile
+    this.weights = { ...profile.weights };
 
     // Grapple tracking
     this.lastGrappleTime = 0;
-    this.grappleCooldown = 3000; // Don't spam grapples
+    this.grappleCooldown = 3000;
+
+    // Combo awareness - track how many times we've been hit recently
+    this.recentHitsTaken = 0;
+    this.lastHitTime = 0;
+    this.hitTrackingWindow = 2000; // 2 seconds
+
+    // Listen for when this fighter gets hit
+    this.scene.events.on('fighter-damaged', this.onFighterDamaged, this);
+  }
+
+  onFighterDamaged(fighter, damage, attacker) {
+    if (fighter === this.fighter) {
+      const now = this.scene.time.now;
+      // Reset counter if it's been a while
+      if (now - this.lastHitTime > this.hitTrackingWindow) {
+        this.recentHitsTaken = 0;
+      }
+      this.recentHitsTaken++;
+      this.lastHitTime = now;
+    }
   }
 
   update(time, delta) {
@@ -85,6 +104,60 @@ export default class AIController {
     let seekTable = this.weights.seekTable;
     let grapple = this.weights.grapple;
 
+    // === COMBO AWARENESS ===
+    // If getting combo'd (hit multiple times recently), prioritize escape
+    if (this.recentHitsTaken >= 2 && currentTime - this.lastHitTime < 1500) {
+      retreat += 0.4;  // Strong retreat urge when being combo'd
+      approach -= 0.2;
+      attack -= 0.2;
+    }
+
+    // === PERSONALITY-BASED ADJUSTMENTS ===
+    switch (this.personality) {
+      case 'brawler': // Dumpster - seeks weapons, trades hits
+        if (!hasWeapon) seekWeapon += 0.2;
+        if (hasWeapon) attack += 0.3;
+        break;
+
+      case 'hitAndRun': // Scar - strike and retreat
+        if (distanceToTarget < this.attackRange) {
+          attack += 0.2;
+        }
+        // After attacking, want to retreat
+        if (this.aiState === AI_STATES.ATTACK) {
+          retreat += 0.3;
+        }
+        break;
+
+      case 'rushdown': // Blaze - relentless offense
+        approach += 0.2;
+        attack += 0.2;
+        retreat = Math.max(0, retreat - 0.1);
+        break;
+
+      case 'grappler': // Tank - close distance, grab
+        if (distanceToTarget > GRAPPLE.INITIATE_RANGE) {
+          approach += 0.3;
+        }
+        grapple += 0.2;
+        break;
+
+      case 'adaptive': // Viper - read and respond
+        // Match target's behavior somewhat
+        const targetHealthPercent = this.target.health / this.target.maxHealth;
+        if (targetHealthPercent < 0.3) {
+          // Target is hurt - press advantage
+          approach += 0.2;
+          attack += 0.2;
+        } else if (healthPercent < targetHealthPercent) {
+          // We're losing - be more careful
+          retreat += 0.15;
+          seekWeapon += 0.1;
+        }
+        break;
+    }
+
+    // === STANDARD SITUATIONAL ADJUSTMENTS ===
     // More aggressive when healthy
     if (healthPercent > 0.7) {
       approach += 0.2;
@@ -115,14 +188,12 @@ export default class AIController {
                        this.target.canAct();
 
     if (canGrapple) {
-      // Boost grapple weight when close and unarmed
       grapple += 0.25;
-      // Extra boost if target is healthy (grapples are good openers)
       if (this.target.health > this.target.maxHealth * 0.7) {
         grapple += 0.1;
       }
     } else {
-      grapple = 0; // Can't grapple, remove from consideration
+      grapple = 0;
     }
 
     // Attack if in range
@@ -138,8 +209,20 @@ export default class AIController {
     grapple *= this.aggressiveness;
     retreat *= (1 - this.aggressiveness);
 
+    // Ensure no negative weights
+    approach = Math.max(0, approach);
+    attack = Math.max(0, attack);
+    retreat = Math.max(0, retreat);
+    seekWeapon = Math.max(0, seekWeapon);
+    seekTable = Math.max(0, seekTable);
+    grapple = Math.max(0, grapple);
+
     // Normalize weights
     const total = approach + attack + retreat + seekWeapon + seekTable + grapple;
+    if (total === 0) {
+      this.aiState = AI_STATES.IDLE;
+      return;
+    }
     approach /= total;
     attack /= total;
     retreat /= total;
@@ -217,7 +300,21 @@ export default class AIController {
     const distance = this.getDistanceToTarget();
 
     if (distance > this.attackRange) {
-      this.moveToward(this.target.x, this.target.y, 0.8);
+      // Add some lateral movement based on personality
+      let strafeAmount = 0;
+
+      // Hitandrun and adaptive personalities strafe more
+      if (this.personality === 'hitAndRun' || this.personality === 'adaptive') {
+        // Strafe vertically to avoid walking straight into attacks
+        const verticalDiff = this.target.y - this.fighter.y;
+        if (Math.abs(verticalDiff) < 30) {
+          // If roughly on same plane, move up or down randomly
+          strafeAmount = (Math.random() > 0.5 ? 1 : -1) * 0.3;
+        }
+      }
+
+      // Approach with optional strafing
+      this.moveTowardWithStrafe(this.target.x, this.target.y, 0.8, strafeAmount);
     } else {
       this.fighter.body.setVelocity(0, 0);
       this.aiState = AI_STATES.ATTACK;
@@ -233,13 +330,41 @@ export default class AIController {
       return;
     }
 
-    // Stop moving to attack
-    this.fighter.body.setVelocity(0, 0);
+    // Check if target is attacking - be more defensive if so
+    const targetIsAttacking = this.target.state === FIGHTER_STATES.ATTACKING;
+
+    // Personality affects attack timing
+    let attackChance = this.aggressiveness;
+
+    if (targetIsAttacking) {
+      // Most personalities back off when target is attacking
+      if (this.personality !== 'rushdown') {
+        attackChance *= 0.3; // Much less likely to trade hits
+        // Consider backing off
+        if (Math.random() < 0.4) {
+          this.aiState = AI_STATES.RETREAT;
+          return;
+        }
+      }
+    }
+
+    // Hit-and-run personality: attack then immediately plan retreat
+    if (this.personality === 'hitAndRun' && time - this.lastAttackTime < 500) {
+      this.aiState = AI_STATES.RETREAT;
+      return;
+    }
+
+    // Stop moving to attack (or slight drift based on personality)
+    if (this.personality === 'rushdown') {
+      // Rushdown keeps slight pressure
+      this.moveToward(this.target.x, this.target.y, 0.2);
+    } else {
+      this.fighter.body.setVelocity(0, 0);
+    }
 
     // Attack if cooldown is done
     if (time - this.lastAttackTime >= this.attackCooldown) {
-      // Random chance to actually attack based on aggressiveness
-      if (Math.random() < this.aggressiveness) {
+      if (Math.random() < attackChance) {
         this.fighter.attack();
         this.lastAttackTime = time;
       }
@@ -299,16 +424,46 @@ export default class AIController {
   }
 
   executeRetreat() {
-    // Move away from target
+    // Move away from target with smart strafing
     const angle = Phaser.Math.Angle.Between(
       this.target.x, this.target.y,
       this.fighter.x, this.fighter.y
     );
 
+    // Check arena bounds and adjust retreat angle
+    let retreatAngle = angle;
+    const margin = 80;
+    const arenaLeft = margin;
+    const arenaRight = 800 - margin;
+    const arenaTop = 150 + margin;
+    const arenaBottom = 400 - margin;
+
+    // If near edge, angle retreat away from wall
+    if (this.fighter.x < arenaLeft) {
+      retreatAngle = Phaser.Math.Angle.RotateToAngle(retreatAngle, 0, 0.5);
+    } else if (this.fighter.x > arenaRight) {
+      retreatAngle = Phaser.Math.Angle.RotateToAngle(retreatAngle, Math.PI, 0.5);
+    }
+    if (this.fighter.y < arenaTop) {
+      retreatAngle = Phaser.Math.Angle.RotateToAngle(retreatAngle, Math.PI / 2, 0.5);
+    } else if (this.fighter.y > arenaBottom) {
+      retreatAngle = Phaser.Math.Angle.RotateToAngle(retreatAngle, -Math.PI / 2, 0.5);
+    }
+
+    // Add some random strafe to retreat to be unpredictable
+    const strafeOffset = (Math.random() - 0.5) * 0.4;
+    retreatAngle += strafeOffset;
+
+    const speed = this.fighter.speed * 0.7;
     this.fighter.body.setVelocity(
-      Math.cos(angle) * this.fighter.speed * 0.6,
-      Math.sin(angle) * this.fighter.speed * 0.6
+      Math.cos(retreatAngle) * speed,
+      Math.sin(retreatAngle) * speed
     );
+
+    // Reset recent hits when successfully retreating
+    if (this.recentHitsTaken > 0) {
+      this.recentHitsTaken = Math.max(0, this.recentHitsTaken - 1);
+    }
   }
 
   executeSeekWeapon() {
@@ -383,6 +538,23 @@ export default class AIController {
     );
   }
 
+  moveTowardWithStrafe(x, y, speedMultiplier = 1, strafeAmount = 0) {
+    const angle = Phaser.Math.Angle.Between(
+      this.fighter.x, this.fighter.y,
+      x, y
+    );
+
+    // Add perpendicular strafe component
+    const strafeAngle = angle + Math.PI / 2;
+
+    const vx = Math.cos(angle) * this.fighter.speed * speedMultiplier +
+               Math.cos(strafeAngle) * this.fighter.speed * strafeAmount;
+    const vy = Math.sin(angle) * this.fighter.speed * speedMultiplier +
+               Math.sin(strafeAngle) * this.fighter.speed * strafeAmount;
+
+    this.fighter.body.setVelocity(vx, vy);
+  }
+
   getDistanceToTarget() {
     return Phaser.Math.Distance.Between(
       this.fighter.x, this.fighter.y,
@@ -437,6 +609,7 @@ export default class AIController {
   }
 
   destroy() {
-    // Cleanup if needed
+    // Remove event listener
+    this.scene.events.off('fighter-damaged', this.onFighterDamaged, this);
   }
 }

@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { COLORS } from '../config/constants.js';
+import { COLORS, COMBO } from '../config/constants.js';
 
 // Announcer callout pools for variety
 const CALLOUTS = {
@@ -147,6 +147,8 @@ export default class EffectsManager {
   setupEventListeners() {
     // Combat events
     this.scene.events.on('combat-hit', this.onCombatHit, this);
+    this.scene.events.on('combat-combo', this.onCombo, this);
+    this.scene.events.on('combat-combo-end', this.onComboEnd, this);
     this.scene.events.on('combat-table-slam', this.onTableSlam, this);
     this.scene.events.on('combat-finisher', this.onFinisher, this);
     this.scene.events.on('combat-grapple-start', this.onGrappleStart, this);
@@ -303,26 +305,119 @@ export default class EffectsManager {
 
   // === EVENT HANDLERS ===
   onCombatHit(hitData) {
-    const { target, isWeaponHit, position } = hitData;
+    const { target, isWeaponHit, position, comboCount = 1 } = hitData;
 
     // Play sound
     this.playHitSound(isWeaponHit);
 
-    // Spawn blood
-    this.spawnBlood(position.x, position.y, isWeaponHit ? 12 : 6);
+    // Spawn blood (more blood for higher combos)
+    const bloodCount = (isWeaponHit ? 12 : 6) + Math.min(comboCount - 1, 4) * 2;
+    this.spawnBlood(position.x, position.y, bloodCount);
 
-    // Sparks for weapon hits
-    if (isWeaponHit) {
-      this.spawnSparks(position.x, position.y, 8);
-      this.shakeHeavy();
-      this.playCrowdReaction(true);
+    // Sparks for weapon hits or high combos
+    if (isWeaponHit || comboCount >= 3) {
+      this.spawnSparks(position.x, position.y, 8 + comboCount * 2);
+    }
+
+    // Screen shake scales with combo
+    const shakeIntensity = COMBO.SHAKE_BASE + (comboCount - 1) * COMBO.SHAKE_PER_HIT;
+    const shakeDuration = 100 + comboCount * 20;
+    this.scene.cameras.main.shake(shakeDuration, shakeIntensity * 0.005);
+
+    // Crowd reaction for combos and weapon hits
+    if (isWeaponHit || comboCount >= 2) {
+      this.playCrowdReaction(comboCount >= 3);
     } else {
-      this.shakeLight();
       this.playCrowdReaction(false);
     }
 
     // Flash target
     this.flashSprite(target);
+  }
+
+  onCombo(comboData) {
+    const { comboCount, comboMultiplier, position } = comboData;
+
+    // Show combo counter above target
+    this.showComboCounter(comboCount, comboMultiplier, position.x, position.y);
+
+    // Announcer callout at key combo milestones
+    if (comboCount === 3) {
+      this.announce('COMBO!', COLORS.YELLOW, '32px');
+    } else if (comboCount === 4) {
+      this.announce('ON FIRE!', COLORS.FIRE_ORANGE, '36px');
+    } else if (comboCount >= 5) {
+      this.announce('BRUTAL!', COLORS.BLOOD_BRIGHT, '40px');
+    }
+  }
+
+  showComboCounter(count, multiplier, x, y) {
+    // Color based on combo length
+    let color = '#FFFF00'; // Yellow for 2-hit
+    if (count >= 3) color = '#FFA500'; // Orange for 3-hit
+    if (count >= 4) color = '#FF4500'; // Red-orange for 4-hit
+    if (count >= 5) color = '#FF0000'; // Red for 5+
+
+    // Create combo text
+    const comboText = this.scene.add.text(x, y, `${count} HIT!`, {
+      fontFamily: 'Arial Black',
+      fontSize: `${24 + count * 4}px`,
+      color: color,
+      stroke: '#000000',
+      strokeThickness: 4
+    });
+    comboText.setOrigin(0.5);
+    comboText.setDepth(1000);
+
+    // Show multiplier beneath
+    const multiplierText = this.scene.add.text(x, y + 30, `x${multiplier.toFixed(1)}`, {
+      fontFamily: 'Arial Black',
+      fontSize: '18px',
+      color: '#FFFFFF',
+      stroke: '#000000',
+      strokeThickness: 3
+    });
+    multiplierText.setOrigin(0.5);
+    multiplierText.setDepth(1000);
+
+    // Animate: pop in, float up, fade out
+    comboText.setScale(0);
+    multiplierText.setScale(0);
+
+    this.scene.tweens.add({
+      targets: [comboText, multiplierText],
+      scale: 1,
+      duration: 100,
+      ease: 'Back.easeOut'
+    });
+
+    this.scene.tweens.add({
+      targets: comboText,
+      y: y - 40,
+      alpha: 0,
+      delay: 400,
+      duration: 300,
+      onComplete: () => comboText.destroy()
+    });
+
+    this.scene.tweens.add({
+      targets: multiplierText,
+      y: y - 10,
+      alpha: 0,
+      delay: 400,
+      duration: 300,
+      onComplete: () => multiplierText.destroy()
+    });
+  }
+
+  onComboEnd(data) {
+    const { fighter, finalCount } = data;
+
+    // Big combo ender announcement
+    if (finalCount >= 4) {
+      this.announce(`${finalCount} HIT COMBO!`, COLORS.FIRE_ORANGE, '36px');
+      this.playCrowdReaction(true);
+    }
   }
 
   onTableSlam(data) {
@@ -580,6 +675,8 @@ export default class EffectsManager {
 
     // Remove event listeners
     this.scene.events.off('combat-hit', this.onCombatHit, this);
+    this.scene.events.off('combat-combo', this.onCombo, this);
+    this.scene.events.off('combat-combo-end', this.onComboEnd, this);
     this.scene.events.off('combat-table-slam', this.onTableSlam, this);
     this.scene.events.off('combat-finisher', this.onFinisher, this);
     this.scene.events.off('combat-grapple-start', this.onGrappleStart, this);

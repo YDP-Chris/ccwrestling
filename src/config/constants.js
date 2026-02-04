@@ -86,6 +86,16 @@ export const TIMING = {
   FIRE_TICK_INTERVAL: 500
 };
 
+// Combo system settings
+export const COMBO = {
+  WINDOW: 1200,           // ms to land next hit before combo resets
+  MAX_MULTIPLIER: 1.5,    // Max damage multiplier at high combos
+  MULTIPLIER_PER_HIT: 0.1, // Damage increase per combo hit
+  METER_BONUS_PER_HIT: 2,  // Extra meter gain per combo hit
+  SHAKE_BASE: 2,          // Base screen shake
+  SHAKE_PER_HIT: 1        // Additional shake per combo hit
+};
+
 // Grapple system settings
 export const GRAPPLE = {
   INITIATE_RANGE: 110,  // Comfortable range for 2.5x scaled sprites

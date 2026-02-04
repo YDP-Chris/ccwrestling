@@ -1,15 +1,61 @@
-import { COMBAT, DAMAGE, METER, GRAPPLE } from '../config/constants.js';
+import { COMBAT, DAMAGE, METER, GRAPPLE, COMBO } from '../config/constants.js';
 
 export default class CombatSystem {
   constructor(scene) {
     this.scene = scene;
     this.fighters = [];
 
+    // Combo tracking per fighter
+    this.comboState = new Map(); // fighter -> { count, lastHitTime, target }
+
     // Listen for combat events
     this.scene.events.on('fighter-attack', this.handleAttack, this);
     this.scene.events.on('fighter-table-slam', this.handleTableSlam, this);
     this.scene.events.on('fighter-grapple-initiate', this.handleGrappleInitiate, this);
     this.scene.events.on('fighter-grapple-throw', this.handleGrappleThrow, this);
+  }
+
+  getComboState(fighter) {
+    if (!this.comboState.has(fighter)) {
+      this.comboState.set(fighter, { count: 0, lastHitTime: 0, target: null });
+    }
+    return this.comboState.get(fighter);
+  }
+
+  updateCombo(attacker, target, time) {
+    const state = this.getComboState(attacker);
+    const timeSinceLastHit = time - state.lastHitTime;
+
+    // Check if combo continues or resets
+    if (timeSinceLastHit <= COMBO.WINDOW && state.target === target) {
+      state.count++;
+    } else {
+      state.count = 1; // Start new combo
+    }
+
+    state.lastHitTime = time;
+    state.target = target;
+
+    return state.count;
+  }
+
+  getComboMultiplier(comboCount) {
+    if (comboCount <= 1) return 1.0;
+    const bonus = (comboCount - 1) * COMBO.MULTIPLIER_PER_HIT;
+    return Math.min(1.0 + bonus, COMBO.MAX_MULTIPLIER);
+  }
+
+  resetCombo(fighter) {
+    const state = this.getComboState(fighter);
+    if (state.count > 1) {
+      // Emit combo end event
+      this.scene.events.emit('combat-combo-end', {
+        fighter,
+        finalCount: state.count
+      });
+    }
+    state.count = 0;
+    state.target = null;
   }
 
   addFighter(fighter) {
@@ -27,11 +73,18 @@ export default class CombatSystem {
     // Find potential targets
     const targets = this.fighters.filter(f => f !== attacker);
 
+    let hitLanded = false;
     for (const target of targets) {
       if (this.checkHit(attacker, target)) {
         this.performAttack(attacker, target);
+        hitLanded = true;
         break; // Only hit one target per attack
       }
+    }
+
+    // Reset combo on whiff (miss)
+    if (!hitLanded) {
+      this.resetCombo(attacker);
     }
   }
 
@@ -53,29 +106,38 @@ export default class CombatSystem {
   }
 
   performAttack(attacker, target) {
-    // Calculate damage
+    const currentTime = this.scene.time.now;
+
+    // Update combo state
+    const comboCount = this.updateCombo(attacker, target, currentTime);
+    const comboMultiplier = this.getComboMultiplier(comboCount);
+
+    // Calculate damage with combo multiplier
     let damage = this.calculateDamage(attacker);
 
     // Apply attack power modifier
     damage = Math.round(damage * attacker.config.attackPower);
 
+    // Apply combo multiplier
+    damage = Math.round(damage * comboMultiplier);
+
     // Determine if this causes knockdown
     const causesKnockdown = attacker.hasWeapon();
     const isHeavyHit = damage >= 15 || attacker.hasWeapon();
 
-    // HIT FREEZE - pause game briefly for impact feel
-    if (isHeavyHit) {
-      this.hitFreeze(80);  // 80ms freeze for heavy hits
-    } else {
-      this.hitFreeze(30);  // 30ms for light hits
-    }
+    // HIT FREEZE - pause game briefly for impact feel (longer freeze for combos)
+    const freezeDuration = isHeavyHit ? 80 : 30;
+    const comboFreezeBonus = Math.min((comboCount - 1) * 10, 40);
+    this.hitFreeze(freezeDuration + comboFreezeBonus);
 
     // Apply damage
     target.takeDamage(damage, attacker);
 
-    // Knockdown if weapon hit
-    if (causesKnockdown && target.health > 0) {
+    // Knockdown if weapon hit OR high combo (5+ hits)
+    if ((causesKnockdown || comboCount >= 5) && target.health > 0) {
       target.knockdown();
+      // Reset combo after knockdown
+      this.resetCombo(attacker);
     }
 
     // Register hit on weapon (may break it)
@@ -87,9 +149,10 @@ export default class CombatSystem {
       }
     }
 
-    // Attacker gains meter
-    const meterGain = attacker.hasWeapon() ? METER.GAIN_WEAPON_HIT : METER.GAIN_HIT_DEALT;
-    attacker.addMeter(meterGain);
+    // Attacker gains meter (bonus for combos)
+    const baseMeterGain = attacker.hasWeapon() ? METER.GAIN_WEAPON_HIT : METER.GAIN_HIT_DEALT;
+    const comboMeterBonus = (comboCount - 1) * COMBO.METER_BONUS_PER_HIT;
+    attacker.addMeter(baseMeterGain + comboMeterBonus);
 
     // Emit hit event for effects
     this.scene.events.emit('combat-hit', {
@@ -98,8 +161,21 @@ export default class CombatSystem {
       damage,
       isWeaponHit: attacker.hasWeapon(),
       isHeavyHit,
-      position: { x: target.x, y: target.y }
+      position: { x: target.x, y: target.y },
+      comboCount,
+      comboMultiplier
     });
+
+    // Emit combo event if combo is active
+    if (comboCount >= 2) {
+      this.scene.events.emit('combat-combo', {
+        attacker,
+        target,
+        comboCount,
+        comboMultiplier,
+        position: { x: target.x, y: target.y - 60 }
+      });
+    }
   }
 
   hitFreeze(duration) {
