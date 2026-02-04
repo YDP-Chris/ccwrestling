@@ -52,6 +52,10 @@ export default class AIController {
   }
 
   onFighterDamaged(fighter, damage, attacker) {
+    // Safety check - scene may be transitioning
+    if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
+    if (!this.scene.time) return;
+
     if (fighter === this.fighter) {
       const now = this.scene.time.now;
       // Reset counter if it's been a while
@@ -64,6 +68,10 @@ export default class AIController {
   }
 
   update(time, delta) {
+    // Safety check - scene may be transitioning
+    if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
+    if (!this.fighter || !this.target) return;
+
     // Handle grapple state specially - AI needs to execute throw
     if (this.fighter.state === FIGHTER_STATES.GRAPPLING) {
       this.handleGrapplingState(time);
@@ -610,6 +618,8 @@ export default class AIController {
 
   destroy() {
     // Remove event listener
-    this.scene.events.off('fighter-damaged', this.onFighterDamaged, this);
+    if (this.scene && this.scene.events) {
+      this.scene.events.off('fighter-damaged', this.onFighterDamaged, this);
+    }
   }
 }

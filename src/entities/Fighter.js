@@ -270,6 +270,8 @@ export default class Fighter extends Phaser.GameObjects.Sprite {
 
     // Fallback timer in case animation doesn't complete
     this.stateTimer = this.scene.time.delayedCall(COMBAT.ATTACK_DURATION + 100, () => {
+      // Safety check - scene may be transitioning when timer fires
+      if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
       if (this.state === FIGHTER_STATES.ATTACKING) {
         this.state = FIGHTER_STATES.IDLE;
       }
@@ -316,6 +318,8 @@ export default class Fighter extends Phaser.GameObjects.Sprite {
 
     // Auto-throw timer if player doesn't press attack
     this.grappleTimer = this.scene.time.delayedCall(GRAPPLE.ESCAPE_WINDOW, () => {
+      // Safety check - scene may be transitioning when timer fires
+      if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
       if (this.state === FIGHTER_STATES.GRAPPLING && this.grappleTarget) {
         this.executeGrappleMove();
       }
@@ -366,7 +370,9 @@ export default class Fighter extends Phaser.GameObjects.Sprite {
     this.setTint(tintColor);
     if (this.scene && this.scene.time) {
       this.scene.time.delayedCall(80, () => {
-        this.clearTint();
+        // Safety check - scene may be transitioning when timer fires
+        if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
+        if (this.clearTint) this.clearTint();
       });
     }
 
@@ -507,6 +513,8 @@ export default class Fighter extends Phaser.GameObjects.Sprite {
 
     // Return to idle after throw animation
     this.scene.time.delayedCall(GRAPPLE.LOCK_DURATION + 200, () => {
+      // Safety check - scene may be transitioning when timer fires
+      if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
       this.completeThrow();
     });
   }
@@ -570,11 +578,10 @@ export default class Fighter extends Phaser.GameObjects.Sprite {
     this.setTint(0xff0000);
     if (this.scene && this.scene.time) {
       this.scene.time.delayedCall(100, () => {
-        this.clearTint();
+        // Safety check - scene may be transitioning when timer fires
+        if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
+        if (this.clearTint) this.clearTint();
       });
-    } else {
-      // Fallback if scene.time not available
-      setTimeout(() => this.clearTint(), 100);
     }
 
     // Emit damage event
@@ -637,9 +644,11 @@ export default class Fighter extends Phaser.GameObjects.Sprite {
     const hitstunDuration = COMBAT.HITSTUN_BASE + (damage * COMBAT.HITSTUN_PER_DAMAGE);
 
     this.stateTimer = this.scene.time.delayedCall(hitstunDuration, () => {
+      // Safety check - scene may be transitioning when timer fires
+      if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
       if (this.state === FIGHTER_STATES.HITSTUN) {
         this.state = FIGHTER_STATES.IDLE;
-        this.body.setVelocity(0, 0);
+        if (this.body) this.body.setVelocity(0, 0);
       }
     });
   }
@@ -661,6 +670,8 @@ export default class Fighter extends Phaser.GameObjects.Sprite {
     }
 
     this.stateTimer = this.scene.time.delayedCall(TIMING.DOWN_DURATION, () => {
+      // Safety check - scene may be transitioning when timer fires
+      if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
       if (this.health > 0) {
         this.getUp();
       }
@@ -669,6 +680,8 @@ export default class Fighter extends Phaser.GameObjects.Sprite {
 
   getUp() {
     if (this.state === FIGHTER_STATES.KO) return;
+    // Safety check
+    if (!this.scene || !this.scene.time) return;
 
     this.state = FIGHTER_STATES.GETUP;
     this.isInvulnerable = true;
@@ -677,6 +690,8 @@ export default class Fighter extends Phaser.GameObjects.Sprite {
     this.play(this.config.animations.getup, true);
 
     this.scene.time.delayedCall(TIMING.GETUP_DURATION, () => {
+      // Safety check - scene may be transitioning when timer fires
+      if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
       this.state = FIGHTER_STATES.IDLE;
       this.isInvulnerable = false;
     });
@@ -684,20 +699,22 @@ export default class Fighter extends Phaser.GameObjects.Sprite {
 
   ko() {
     this.state = FIGHTER_STATES.KO;
-    this.body.setVelocity(0, 0);
+    if (this.body) this.body.setVelocity(0, 0);
     this.dropWeapon();
 
     // Play down animation
     this.play(this.config.animations.down, true);
 
     // Flash effect
-    this.scene.tweens.add({
-      targets: this,
-      alpha: 0.5,
-      duration: 200,
-      yoyo: true,
-      repeat: -1
-    });
+    if (this.scene && this.scene.tweens) {
+      this.scene.tweens.add({
+        targets: this,
+        alpha: 0.5,
+        duration: 200,
+        yoyo: true,
+        repeat: -1
+      });
+    }
 
     // Emit KO event
     this.emitEvent('fighter-ko', this);
