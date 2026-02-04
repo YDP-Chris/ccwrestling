@@ -1730,6 +1730,9 @@ export default class FightScene extends Phaser.Scene {
     // Don't update gameplay until match starts
     if (!this.matchStarted || this.matchOver) return;
 
+    // Safety check - ensure fighters exist
+    if (!this.player || !this.enemy) return;
+
     // Update replay system
     if (this.replayManager) {
       this.replayManager.update();
@@ -1781,24 +1784,32 @@ export default class FightScene extends Phaser.Scene {
     }
 
     // Update weapons
-    for (const chair of this.chairs) {
-      chair.update();
+    if (this.chairs) {
+      for (const chair of this.chairs) {
+        chair.update();
+      }
     }
 
-    for (const table of this.tables) {
-      table.update(time, delta);
+    if (this.tables) {
+      for (const table of this.tables) {
+        table.update(time, delta);
+      }
     }
 
     // Update AI
-    this.aiController.update(time, delta);
+    if (this.aiController) {
+      this.aiController.update(time, delta);
+    }
 
     // DEBUG: Set extremely high depth to ensure enemy is visible
-    this.enemy.setDepth(9999);
+    if (this.enemy) {
+      this.enemy.setDepth(9999);
+    }
 
     // Update UI
-    this.playerHealthBar.update();
-    this.enemyHealthBar.update();
-    this.extremeMeter.update();
+    if (this.playerHealthBar) this.playerHealthBar.update();
+    if (this.enemyHealthBar) this.enemyHealthBar.update();
+    if (this.extremeMeter) this.extremeMeter.update();
 
     // Update match timer
     if (this.matchTimer) {
@@ -1811,6 +1822,7 @@ export default class FightScene extends Phaser.Scene {
 
   updateDynamicMusic() {
     if (!this.effectsManager || !this.effectsManager.fightMusic) return;
+    if (!this.player || !this.enemy) return;
 
     const playerHealthPercent = this.player.health / this.player.maxHealth;
     const enemyHealthPercent = this.enemy.health / this.enemy.maxHealth;
