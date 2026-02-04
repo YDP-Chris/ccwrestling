@@ -26,8 +26,9 @@ export default class MenuScene extends Phaser.Scene {
 
   init() {
     this.hasStarted = false;
-    this.selectedIndex = 0;
-    this.menuItems = [];
+    this.selectedRow = 0;
+    this.selectedCol = 0;
+    this.menuItems = []; // 2D array: [col][row]
   }
 
   create() {
@@ -80,7 +81,7 @@ export default class MenuScene extends Phaser.Scene {
 
     // Controls hint at bottom
     const controls = this.add.text(GAME.WIDTH / 2, GAME.HEIGHT - 20,
-      'ARROWS/WASD to select | ENTER to confirm', {
+      'ARROWS/WASD to navigate | ENTER to select', {
       fontFamily: 'Arial',
       fontSize: '10px',
       color: '#444444'
@@ -112,88 +113,104 @@ export default class MenuScene extends Phaser.Scene {
 
   createMenuItems() {
     const modes = Object.values(MODES);
-    const startY = 155;
-    const spacing = 38;
+    const startY = 160;
+    const spacing = 42;
+    const leftColX = GAME.WIDTH * 0.28;  // ~224
+    const rightColX = GAME.WIDTH * 0.72; // ~576
+
+    // Split into two columns
+    const itemsPerCol = Math.ceil(modes.length / 2);
+    this.menuItems = [[], []]; // [left column, right column]
 
     modes.forEach((mode, index) => {
-      const y = startY + (index * spacing);
+      const col = index < itemsPerCol ? 0 : 1;
+      const row = index < itemsPerCol ? index : index - itemsPerCol;
+      const x = col === 0 ? leftColX : rightColX;
+      const y = startY + (row * spacing);
 
       // Menu item container
-      const container = this.add.container(GAME.WIDTH / 2, y);
+      const container = this.add.container(x, y);
 
       // Background bar (hidden until selected)
-      const bg = this.add.rectangle(0, 0, 240, 32, COLORS.BLOOD_BRIGHT, 0);
+      const bg = this.add.rectangle(0, 0, 200, 34, COLORS.BLOOD_BRIGHT, 0);
       bg.setStrokeStyle(2, COLORS.BLOOD_BRIGHT, 0);
       container.add(bg);
 
       // Label
-      const label = this.add.text(0, -2, mode.label, {
+      const label = this.add.text(0, 0, mode.label, {
         fontFamily: 'Arial Black',
-        fontSize: '18px',
+        fontSize: '16px',
         color: '#888888'
       });
       label.setOrigin(0.5);
       container.add(label);
 
-      // Description (shown when selected)
-      const desc = this.add.text(0, 14, mode.desc, {
-        fontFamily: 'Arial',
-        fontSize: '10px',
-        color: '#666666'
-      });
-      desc.setOrigin(0.5);
-      desc.setAlpha(0);
-      container.add(desc);
-
-      this.menuItems.push({
+      this.menuItems[col].push({
         mode,
         container,
         bg,
         label,
-        desc
+        col,
+        row
       });
     });
+
+    // Description text at bottom center (shared for selected item)
+    this.descText = this.add.text(GAME.WIDTH / 2, GAME.HEIGHT - 55, '', {
+      fontFamily: 'Arial',
+      fontSize: '12px',
+      color: '#AAAAAA'
+    });
+    this.descText.setOrigin(0.5);
 
     // Initial selection
     this.updateSelection();
   }
 
   updateSelection() {
-    this.menuItems.forEach((item, index) => {
-      const isSelected = index === this.selectedIndex;
+    const selectedItem = this.menuItems[this.selectedCol][this.selectedRow];
 
-      // Animate selection
-      this.tweens.add({
-        targets: item.label,
-        scaleX: isSelected ? 1.08 : 1,
-        scaleY: isSelected ? 1.08 : 1,
-        duration: 100
-      });
+    // Update all items
+    for (let col = 0; col < this.menuItems.length; col++) {
+      for (let row = 0; row < this.menuItems[col].length; row++) {
+        const item = this.menuItems[col][row];
+        const isSelected = col === this.selectedCol && row === this.selectedRow;
 
-      // Color and style
-      item.label.setColor(isSelected ? '#FFFFFF' : '#888888');
-      item.bg.setFillStyle(COLORS.BLOOD_BRIGHT, isSelected ? 0.3 : 0);
-      item.bg.setStrokeStyle(2, COLORS.BLOOD_BRIGHT, isSelected ? 1 : 0);
+        // Animate selection
+        this.tweens.add({
+          targets: item.label,
+          scaleX: isSelected ? 1.1 : 1,
+          scaleY: isSelected ? 1.1 : 1,
+          duration: 100
+        });
 
-      // Show/hide description
-      this.tweens.add({
-        targets: item.desc,
-        alpha: isSelected ? 1 : 0,
-        duration: 150
-      });
-    });
+        // Color and style
+        item.label.setColor(isSelected ? '#FFFFFF' : '#888888');
+        item.bg.setFillStyle(COLORS.BLOOD_BRIGHT, isSelected ? 0.3 : 0);
+        item.bg.setStrokeStyle(2, COLORS.BLOOD_BRIGHT, isSelected ? 1 : 0);
+      }
+    }
+
+    // Update description text
+    if (selectedItem) {
+      this.descText.setText(selectedItem.mode.desc);
+    }
   }
 
   setupInput() {
     // Arrow keys
     this.upKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP);
     this.downKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN);
+    this.leftKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT);
+    this.rightKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT);
     this.enterKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
     this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
     // WASD
     this.wKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
     this.sKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
+    this.aKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
+    this.dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
   }
 
   update() {
@@ -206,14 +223,28 @@ export default class MenuScene extends Phaser.Scene {
     if (Phaser.Input.Keyboard.JustDown(this.upKey) ||
         Phaser.Input.Keyboard.JustDown(this.wKey) ||
         mobile.justPressed('up')) {
-      this.navigate(-1);
+      this.navigateVertical(-1);
     }
 
     // Navigate down
     if (Phaser.Input.Keyboard.JustDown(this.downKey) ||
         Phaser.Input.Keyboard.JustDown(this.sKey) ||
         mobile.justPressed('down')) {
-      this.navigate(1);
+      this.navigateVertical(1);
+    }
+
+    // Navigate left
+    if (Phaser.Input.Keyboard.JustDown(this.leftKey) ||
+        Phaser.Input.Keyboard.JustDown(this.aKey) ||
+        mobile.justPressed('left')) {
+      this.navigateHorizontal(-1);
+    }
+
+    // Navigate right
+    if (Phaser.Input.Keyboard.JustDown(this.rightKey) ||
+        Phaser.Input.Keyboard.JustDown(this.dKey) ||
+        mobile.justPressed('right')) {
+      this.navigateHorizontal(1);
     }
 
     // Select (attack button acts as confirm on menus)
@@ -224,12 +255,28 @@ export default class MenuScene extends Phaser.Scene {
     }
   }
 
-  navigate(direction) {
-    this.selectedIndex = Phaser.Math.Wrap(
-      this.selectedIndex + direction,
+  navigateVertical(direction) {
+    const colLength = this.menuItems[this.selectedCol].length;
+    this.selectedRow = Phaser.Math.Wrap(
+      this.selectedRow + direction,
       0,
-      this.menuItems.length
+      colLength
     );
+
+    // Play navigate sound
+    this.sound.play('sfx-menu-navigate', { volume: 0.3 });
+
+    this.updateSelection();
+  }
+
+  navigateHorizontal(direction) {
+    // Switch columns
+    const newCol = Phaser.Math.Wrap(this.selectedCol + direction, 0, 2);
+
+    // Clamp row to new column's length
+    const newColLength = this.menuItems[newCol].length;
+    this.selectedRow = Math.min(this.selectedRow, newColLength - 1);
+    this.selectedCol = newCol;
 
     // Play navigate sound
     this.sound.play('sfx-menu-navigate', { volume: 0.3 });
@@ -239,7 +286,7 @@ export default class MenuScene extends Phaser.Scene {
 
   selectMode() {
     this.hasStarted = true;
-    const selectedMode = this.menuItems[this.selectedIndex].mode;
+    const selectedMode = this.menuItems[this.selectedCol][this.selectedRow].mode;
 
     // Play select sound
     this.sound.play('sfx-menu-select', { volume: 0.6 });
