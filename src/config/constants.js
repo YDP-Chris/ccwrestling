@@ -20,14 +20,14 @@ export const DAMAGE = {
 
 // Combat settings
 export const COMBAT = {
-  FIST_RANGE: 40,
-  CHAIR_RANGE: 50,
-  TABLE_SLAM_RANGE: 60,
+  FIST_RANGE: 80,
+  CHAIR_RANGE: 100,
+  TABLE_SLAM_RANGE: 100,
   HITSTUN_BASE: 200,
   HITSTUN_PER_DAMAGE: 10,
   KNOCKBACK_FORCE: 200,
   ATTACK_DURATION: 300,
-  PICKUP_RANGE: 50
+  PICKUP_RANGE: 80
 };
 
 // Extreme meter settings
@@ -88,7 +88,7 @@ export const TIMING = {
 
 // Grapple system settings
 export const GRAPPLE = {
-  INITIATE_RANGE: 80,  // Increased for 2.5x scaled sprites
+  INITIATE_RANGE: 110,  // Comfortable range for 2.5x scaled sprites
   ESCAPE_THRESHOLD: 5,
   ESCAPE_WINDOW: 2000,
   LOCK_DURATION: 500,

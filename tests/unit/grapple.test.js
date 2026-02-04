@@ -51,10 +51,10 @@ describe('GrappleLogic', () => {
     });
 
     it('should calculate diagonal distance correctly', () => {
-      // Distance should be sqrt(50^2 + 50^2) ≈ 70.7
+      // Distance should be sqrt(50^2 + 50^2) ≈ 70.7 (within 110)
       expect(GrappleLogic.isInGrappleRange(0, 0, 50, 50)).toBe(true);
-      // Distance should be sqrt(60^2 + 60^2) ≈ 84.8 (beyond 80)
-      expect(GrappleLogic.isInGrappleRange(0, 0, 60, 60)).toBe(false);
+      // Distance should be sqrt(80^2 + 80^2) ≈ 113.1 (beyond 110)
+      expect(GrappleLogic.isInGrappleRange(0, 0, 80, 80)).toBe(false);
     });
   });
 
