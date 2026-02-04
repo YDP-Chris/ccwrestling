@@ -8,9 +8,14 @@ const MODES = {
   CAREER: { id: 'career', label: 'CAREER', desc: 'Rise from rookie to champion with storylines' },
   QUICK_MATCH: { id: 'quick', label: 'QUICK MATCH', desc: 'Jump right into the action' },
   BEST_OF_3: { id: 'bestof3', label: 'BEST OF 3', desc: 'First to 2 round wins takes the match' },
+  FIRST_BLOOD: { id: 'firstblood', label: 'FIRST BLOOD', desc: 'First hit wins - lightning fast rounds' },
+  IRON_MAN: { id: 'ironman', label: 'IRON MAN', desc: 'Most KOs in 3 minutes wins' },
   ARCADE: { id: 'arcade', label: 'ARCADE', desc: 'Fight through the roster' },
   SURVIVAL: { id: 'survival', label: 'SURVIVAL', desc: 'Endless fights, health carries over' },
+  TOURNAMENT: { id: 'tournament', label: 'TOURNAMENT', desc: 'Compete in bracket tournaments' },
   PRACTICE: { id: 'practice', label: 'PRACTICE', desc: 'Train your moves, AI won\'t attack' },
+  STATS: { id: 'stats', label: 'STATS', desc: 'View your career statistics' },
+  REPLAYS: { id: 'replays', label: 'REPLAYS', desc: 'Watch saved match replays' },
   OPTIONS: { id: 'options', label: 'OPTIONS', desc: 'Settings and controls' }
 };
 
@@ -260,10 +265,21 @@ export default class MenuScene extends Phaser.Scene {
           break;
         case 'quick':
         case 'bestof3':
+        case 'firstblood':
+        case 'ironman':
         case 'arcade':
         case 'survival':
         case 'practice':
           TransitionManager.wipeToScene(this, 'CharacterSelectScene', { mode: selectedMode.id });
+          break;
+        case 'tournament':
+          TransitionManager.wipeToScene(this, 'TournamentScene');
+          break;
+        case 'stats':
+          TransitionManager.fadeToScene(this, 'StatsScene');
+          break;
+        case 'replays':
+          TransitionManager.fadeToScene(this, 'ReplayScene');
           break;
         case 'options':
           TransitionManager.fadeToScene(this, 'OptionsScene');

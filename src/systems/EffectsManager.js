@@ -3,14 +3,18 @@ import { COLORS, COMBO } from '../config/constants.js';
 
 // Announcer callout pools for variety
 const CALLOUTS = {
-  hit: ['OOH!', 'NICE!', 'SOLID!', 'BAM!'],
-  heavyHit: ['BRUTAL!', 'DEVASTATING!', 'CRUSHING!', 'VICIOUS!'],
-  combo: ['COMBO!', 'CHAIN!', 'ON FIRE!'],
-  lowHealth: ['DANGER!', 'CRITICAL!', 'HANGING ON!', 'DESPERATE!'],
-  comeback: ['COMEBACK!', 'FIGHTING BACK!', 'REFUSES TO QUIT!'],
-  grapple: ['CLINCH!', 'LOCKED UP!', 'GRAPPLE!'],
-  throw: ['THROWN!', 'SLAMMED!', 'PLANTED!'],
-  nearKO: ['SO CLOSE!', 'ALMOST!', 'ONE MORE HIT!']
+  hit: ['OOH!', 'NICE!', 'SOLID!', 'BAM!', 'CRACK!', 'POW!', 'WHAM!'],
+  heavyHit: ['BRUTAL!', 'DEVASTATING!', 'CRUSHING!', 'VICIOUS!', 'SAVAGE!', 'WRECKED!', 'DESTRUCTION!'],
+  combo: ['COMBO!', 'CHAIN!', 'ON FIRE!', 'UNSTOPPABLE!', 'RELENTLESS!'],
+  lowHealth: ['DANGER!', 'CRITICAL!', 'HANGING ON!', 'DESPERATE!', 'ON THE ROPES!', 'LAST LEGS!'],
+  comeback: ['COMEBACK!', 'FIGHTING BACK!', 'REFUSES TO QUIT!', 'SECOND WIND!', 'NOT DONE YET!'],
+  grapple: ['CLINCH!', 'LOCKED UP!', 'GRAPPLE!', 'TIE UP!', 'GOT EM!'],
+  throw: ['THROWN!', 'SLAMMED!', 'PLANTED!', 'TOSSED!', 'LAUNCHED!', 'DOWN HARD!'],
+  nearKO: ['SO CLOSE!', 'ALMOST!', 'ONE MORE HIT!', 'FINISH IT!', 'END IT!'],
+  weaponPickup: ['STEEL!', 'WEAPON!', 'OH NO!', 'ARMED!', 'DANGER!'],
+  tableBreak: ['THROUGH THE TABLE!', 'SHATTERED!', 'DESTROYED!', 'BROKEN!'],
+  fireStart: ['FIRE!', 'IT\'S LIT!', 'FLAMES!', 'BURNING!', 'INFERNO!'],
+  finisher: ['EXTREME!', 'DEVASTATING!', 'ANNIHILATION!', 'DESTRUCTION!']
 };
 
 export default class EffectsManager {
@@ -181,9 +185,23 @@ export default class EffectsManager {
 
   playHitSound(isWeapon = false) {
     if (isWeapon) {
-      this.playSound('sfx-chair-hit', 0.6);
+      // Vary weapon hit pitch slightly
+      const detune = Phaser.Math.Between(-50, 50);
+      this.playSoundWithDetune('sfx-chair-hit', 0.6, detune);
     } else {
-      this.playSound('sfx-hit', 0.5);
+      // Vary punch sound pitch for variety without new audio files
+      const detune = Phaser.Math.Between(-100, 100);
+      this.playSoundWithDetune('sfx-hit', 0.5, detune);
+    }
+  }
+
+  playSoundWithDetune(key, volume = 0.5, detune = 0) {
+    try {
+      if (this.scene.cache.audio.exists(key)) {
+        this.scene.sound.play(key, { volume, detune });
+      }
+    } catch (e) {
+      console.warn('Sound playback error:', key, e);
     }
   }
 
@@ -461,8 +479,9 @@ export default class EffectsManager {
     // Sparks
     this.spawnSparks(target.x, target.y, 15);
 
-    // Big announcement
-    this.showAnnouncement('EXTREME!', COLORS.FIRE_ORANGE, 2000, '72px');
+    // Big announcement with variety
+    const callout = this.getRandomCallout('finisher');
+    this.showAnnouncement(callout, COLORS.FIRE_ORANGE, 2000, '72px');
 
     // Slow motion effect
     this.scene.time.timeScale = 0.3;
@@ -543,7 +562,8 @@ export default class EffectsManager {
 
   onTableIgnited(table) {
     this.playSound('sfx-fire-ignite', 0.6);
-    this.showAnnouncement('FIRE!', COLORS.FIRE_ORANGE, 800, '36px');
+    const callout = this.getRandomCallout('fireStart');
+    this.showAnnouncement(callout, COLORS.FIRE_ORANGE, 800, '36px');
 
     // Start fire loop sound
     if (!this.fireLoopSound) {
@@ -572,6 +592,10 @@ export default class EffectsManager {
     this.playSound('sfx-table-break', 0.7);
     this.spawnDebris(table.x, table.y, 20);
 
+    // Table break callout
+    const callout = this.getRandomCallout('tableBreak');
+    this.announce(callout, wasOnFire ? COLORS.FIRE_ORANGE : COLORS.CHROME, '32px');
+
     if (wasOnFire) {
       this.spawnFire(table.x, table.y, 15);
       // Stop fire loop sound
@@ -591,6 +615,12 @@ export default class EffectsManager {
   onWeaponPickup(fighter, weapon) {
     this.playSound('sfx-chair-pickup', 0.5);
     this.flashSprite(weapon, COLORS.CHROME, 200);
+
+    // Random weapon pickup callout
+    if (this.canAnnounce() && Math.random() < 0.5) {
+      const callout = this.getRandomCallout('weaponPickup');
+      this.announce(callout, COLORS.CHROME, '28px');
+    }
   }
 
   onGrappleStart(data) {

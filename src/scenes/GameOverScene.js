@@ -4,6 +4,7 @@ import { CONTROLS } from '../config/controls.js';
 import StatsManager from '../systems/StatsManager.js';
 import TransitionManager from '../systems/TransitionManager.js';
 import CareerManager from '../systems/CareerManager.js';
+import ReplayScene from './ReplayScene.js';
 
 export default class GameOverScene extends Phaser.Scene {
   constructor() {
@@ -400,28 +401,33 @@ export default class GameOverScene extends Phaser.Scene {
   saveReplay() {
     if (!this.recording) return;
 
-    // Create download
-    const json = JSON.stringify(this.recording, null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
+    // Add match result to recording
+    const replayData = {
+      ...this.recording,
+      winner: this.winnerName,
+      playerWon: this.playerWon
+    };
 
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-    const filename = `ccw-replay-${timestamp}.json`;
-
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-
-    URL.revokeObjectURL(url);
+    // Save to localStorage for replay list
+    const saved = ReplayScene.saveReplay(replayData);
 
     // Visual feedback
-    const savedText = this.add.text(GAME.WIDTH / 2, GAME.HEIGHT - 40, `Saved: ${filename}`, {
+    const message = saved ? 'Replay saved!' : 'Failed to save replay';
+    const color = saved ? '#00FF00' : '#FF4500';
+
+    const savedText = this.add.text(GAME.WIDTH / 2, GAME.HEIGHT - 40, message, {
       fontFamily: 'Arial',
       fontSize: '14px',
-      color: '#00FF00'
+      color: color
     });
     savedText.setOrigin(0.5);
+
+    // Update save button text
+    const saveOption = this.options.find(o => o.action === 'save');
+    if (saveOption && saved) {
+      saveOption.text.setText('REPLAY SAVED');
+      saveOption.text.setColor('#888888');
+    }
 
     this.time.delayedCall(2000, () => {
       savedText.destroy();

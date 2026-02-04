@@ -16,6 +16,7 @@ import MatchTimer from '../ui/MatchTimer.js';
 import { ReplayManager } from '../systems/replay/index.js';
 import StatsManager from '../systems/StatsManager.js';
 import CareerManager from '../systems/CareerManager.js';
+import PracticeOverlay from '../ui/PracticeOverlay.js';
 
 export default class FightScene extends Phaser.Scene {
   constructor() {
@@ -56,6 +57,13 @@ export default class FightScene extends Phaser.Scene {
     this.currentRound = data.currentRound || 1;
     this.playerRoundWins = data.playerRoundWins || 0;
     this.opponentRoundWins = data.opponentRoundWins || 0;
+
+    // Iron Man mode tracking
+    this.playerKOCount = data.playerKOCount || 0;
+    this.opponentKOCount = data.opponentKOCount || 0;
+
+    // Tournament mode data
+    this.tournamentData = data.tournamentData || null;
 
     // Load settings
     this.loadSettings();
@@ -601,8 +609,11 @@ export default class FightScene extends Phaser.Scene {
     // Combo counter
     this.comboCounter = new ComboCounter(this);
 
-    // Match timer
-    this.matchTimer = new MatchTimer(this, this.settings);
+    // Match timer - Iron Man mode always uses 3 minutes
+    const timerSettings = this.gameMode === 'ironman'
+      ? { ...this.settings, matchLength: 'medium' }  // 3 minutes for Iron Man
+      : this.settings;
+    this.matchTimer = new MatchTimer(this, timerSettings);
 
     // Character names (dynamic based on selection)
     this.add.text(25, 45, this.playerConfig.name.toUpperCase(), {
@@ -650,6 +661,20 @@ export default class FightScene extends Phaser.Scene {
         fontSize: '10px',
         color: '#FFFFFF'
       }).setOrigin(0.5);
+    } else if (this.gameMode === 'ironman') {
+      // Iron Man mode - show KO score
+      this.add.text(GAME.WIDTH / 2, 10, 'IRON MAN', {
+        fontFamily: 'Arial Black',
+        fontSize: '12px',
+        color: '#FFD700'
+      }).setOrigin(0.5);
+
+      // KO Score display
+      this.ironManScoreText = this.add.text(GAME.WIDTH / 2, 26, `${this.playerKOCount} - ${this.opponentKOCount}`, {
+        fontFamily: 'Arial Black',
+        fontSize: '14px',
+        color: '#FFFFFF'
+      }).setOrigin(0.5);
     } else if (this.gameMode === 'survival') {
       // Survival mode - show streak
       this.add.text(GAME.WIDTH / 2, 10, 'SURVIVAL', {
@@ -677,6 +702,11 @@ export default class FightScene extends Phaser.Scene {
           color: '#FF4500'
         }).setOrigin(0.5);
       }
+    }
+
+    // Practice mode overlay
+    if (this.gameMode === 'practice') {
+      this.practiceOverlay = new PracticeOverlay(this);
     }
   }
 
@@ -772,10 +802,53 @@ export default class FightScene extends Phaser.Scene {
 
     // Match timer events
     this.events.on('match-time-up', this.onMatchTimeUp, this);
+
+    // Combat hit events (for First Blood mode)
+    this.events.on('combat-hit', this.onCombatHit, this);
+  }
+
+  onCombatHit(hitData) {
+    // First Blood mode - first hit wins
+    if (this.gameMode === 'firstblood' && !this.matchOver) {
+      const winner = hitData.attacker;
+      const loser = hitData.target;
+
+      this.matchOver = true;
+      this.winner = winner;
+
+      // Show First Blood announcement
+      this.effectsManager.showAnnouncement('FIRST BLOOD!', COLORS.BLOOD_BRIGHT, 2000, '56px');
+      this.effectsManager.shakeDevastating();
+
+      // Winner plays victory animation
+      this.time.delayedCall(500, () => {
+        winner.victory();
+      });
+
+      // Transition to game over
+      this.time.delayedCall(TIMING.KO_DELAY + 500, () => {
+        this.effectsManager.stopAllAudio();
+        this.scene.start('GameOverScene', {
+          winner: winner.config.name,
+          playerWon: winner === this.player,
+          mode: this.gameMode,
+          player: this.playerCharKey,
+          opponent: this.opponentCharKey
+        });
+      });
+    }
+
+    // Iron Man mode - track KO for scoring (damage tracked via fighter-damaged)
   }
 
   onMatchTimeUp() {
     if (this.matchOver) return;
+
+    // Iron Man mode - determine winner by KO count
+    if (this.gameMode === 'ironman') {
+      this.handleIronManTimeUp();
+      return;
+    }
 
     // Determine winner by health
     const playerHealth = this.player.health / this.player.maxHealth;
@@ -833,6 +906,71 @@ export default class FightScene extends Phaser.Scene {
     });
   }
 
+  handleIronManTimeUp() {
+    this.matchOver = true;
+
+    // Determine winner by KO count
+    let playerWon;
+    let announcement;
+
+    if (this.playerKOCount > this.opponentKOCount) {
+      this.winner = this.player;
+      playerWon = true;
+      announcement = `WINNER: ${this.playerKOCount} - ${this.opponentKOCount}`;
+    } else if (this.opponentKOCount > this.playerKOCount) {
+      this.winner = this.enemy;
+      playerWon = false;
+      announcement = `WINNER: ${this.opponentKOCount} - ${this.playerKOCount}`;
+    } else {
+      // Tiebreaker: current health
+      const playerHealth = this.player.health / this.player.maxHealth;
+      const enemyHealth = this.enemy.health / this.enemy.maxHealth;
+
+      if (playerHealth >= enemyHealth) {
+        this.winner = this.player;
+        playerWon = true;
+        announcement = 'DRAW - HEALTH DECIDES!';
+      } else {
+        this.winner = this.enemy;
+        playerWon = false;
+        announcement = 'DRAW - HEALTH DECIDES!';
+      }
+    }
+
+    // Show final score
+    this.effectsManager.showAnnouncement('TIME!', COLORS.FIRE_ORANGE, 1000, '48px');
+
+    this.time.delayedCall(1200, () => {
+      this.effectsManager.showAnnouncement(announcement, COLORS.CHROME, 2000, '32px');
+      this.winner.victory();
+    });
+
+    // Record stats
+    StatsManager.recordMatch({
+      playerWon,
+      playerCharacter: this.playerCharKey,
+      opponentCharacter: this.opponentCharKey,
+      mode: 'ironman',
+      wasKO: false,
+      damageDealt: 0,
+      damageTaken: 0
+    });
+
+    // Transition to game over
+    this.time.delayedCall(TIMING.KO_DELAY + 1500, () => {
+      this.effectsManager.stopAllAudio();
+      this.scene.start('GameOverScene', {
+        winner: this.winner.config.name,
+        playerWon,
+        mode: 'ironman',
+        player: this.playerCharKey,
+        opponent: this.opponentCharKey,
+        playerKOCount: this.playerKOCount,
+        opponentKOCount: this.opponentKOCount
+      });
+    });
+  }
+
   onChairBroken(chair) {
     // Remove from chairs array
     const index = this.chairs.indexOf(chair);
@@ -869,6 +1007,12 @@ export default class FightScene extends Phaser.Scene {
 
   onFighterKO(fighter) {
     if (this.matchOver) return;
+
+    // Iron Man mode - KO doesn't end match, it scores a point
+    if (this.gameMode === 'ironman') {
+      this.handleIronManKO(fighter);
+      return;
+    }
 
     this.matchOver = true;
     this.winner = fighter === this.player ? this.enemy : this.player;
@@ -914,6 +1058,23 @@ export default class FightScene extends Phaser.Scene {
     const newSurvivalStreak = this.winner === this.player ?
       this.survivalStreak + 1 : 0;
 
+    // Tournament mode goes back to bracket
+    if (this.gameMode === 'tournament' && this.tournamentData) {
+      this.time.delayedCall(TIMING.KO_DELAY, () => {
+        this.effectsManager.stopAllAudio();
+        this.scene.start('TournamentBracketScene', {
+          tournament: this.tournamentData.tournament,
+          fromMatch: true,
+          matchResult: {
+            roundIndex: this.tournamentData.roundIndex,
+            matchIndex: this.tournamentData.matchIndex,
+            winner: this.winner === this.player ? this.playerCharKey : this.opponentCharKey
+          }
+        });
+      });
+      return;
+    }
+
     // Transition to game over
     this.time.delayedCall(TIMING.KO_DELAY, () => {
       this.effectsManager.stopAllAudio();
@@ -932,6 +1093,66 @@ export default class FightScene extends Phaser.Scene {
         isTitleMatch: this.isTitleMatch
       });
     });
+  }
+
+  handleIronManKO(fighter) {
+    // Determine who scored the KO
+    const playerScored = fighter === this.enemy;
+
+    if (playerScored) {
+      this.playerKOCount++;
+    } else {
+      this.opponentKOCount++;
+    }
+
+    // Update score display
+    if (this.ironManScoreText) {
+      this.ironManScoreText.setText(`${this.playerKOCount} - ${this.opponentKOCount}`);
+
+      // Flash the score
+      this.tweens.add({
+        targets: this.ironManScoreText,
+        scale: 1.5,
+        duration: 200,
+        yoyo: true
+      });
+    }
+
+    // Show KO announcement
+    const koText = playerScored ? 'YOU SCORED!' : 'OPPONENT SCORES!';
+    const koColor = playerScored ? COLORS.GREEN : COLORS.RED;
+    this.effectsManager.showAnnouncement(koText, koColor, 1500, '36px');
+    this.effectsManager.shakeHeavy();
+
+    // Reset fighters after brief delay
+    this.time.delayedCall(1500, () => {
+      this.resetFightersForIronMan();
+    });
+  }
+
+  resetFightersForIronMan() {
+    // Reset health
+    this.player.health = this.player.maxHealth;
+    this.enemy.health = this.enemy.maxHealth;
+
+    // Reset positions
+    this.player.x = 180;
+    this.player.y = 280;
+    this.enemy.x = 620;
+    this.enemy.y = 280;
+
+    // Reset states
+    this.player.state = 'idle';
+    this.enemy.state = 'idle';
+    this.player.body.enable = true;
+    this.enemy.body.enable = true;
+
+    // Reset health bars
+    if (this.playerHealthBar) this.playerHealthBar.update();
+    if (this.enemyHealthBar) this.enemyHealthBar.update();
+
+    // Show ready
+    this.effectsManager.showAnnouncement('FIGHT!', COLORS.WHITE, 800, '48px');
   }
 
   handleRoundEnd() {
@@ -1190,28 +1411,48 @@ export default class FightScene extends Phaser.Scene {
   showPauseOverlay() {
     // Dim background
     this.pauseOverlay = this.add.container(0, 0);
-    this.pauseOverlay.setDepth(10000); // Above everything including fighters
+    this.pauseOverlay.setDepth(10000);
 
-    const dimBg = this.add.rectangle(GAME.WIDTH / 2, GAME.HEIGHT / 2, GAME.WIDTH, GAME.HEIGHT, 0x000000, 0.8);
+    const dimBg = this.add.rectangle(GAME.WIDTH / 2, GAME.HEIGHT / 2, GAME.WIDTH, GAME.HEIGHT, 0x000000, 0.85);
     this.pauseOverlay.add(dimBg);
 
-    const pauseText = this.add.text(GAME.WIDTH / 2, 50, 'PAUSED', {
+    const pauseText = this.add.text(GAME.WIDTH / 2, 35, 'PAUSED', {
       fontFamily: 'Arial Black',
-      fontSize: '48px',
+      fontSize: '36px',
       color: '#FFFFFF'
     });
     pauseText.setOrigin(0.5);
     this.pauseOverlay.add(pauseText);
 
-    // Controls reference
-    const controlsTitle = this.add.text(GAME.WIDTH / 2, 100, 'CONTROLS', {
-      fontFamily: 'Arial Black',
-      fontSize: '18px',
-      color: '#FF4500'
-    });
-    controlsTitle.setOrigin(0.5);
-    this.pauseOverlay.add(controlsTitle);
+    // Tabbed menu system
+    this.pauseTabIndex = 0;
+    this.pauseOptionIndex = 0;
+    this.pauseTabs = ['CONTROLS', 'MOVES', 'OPTIONS'];
+    this.pauseTabContents = [];
 
+    // Tab headers
+    const tabY = 75;
+    this.pauseTabTexts = this.pauseTabs.map((tab, i) => {
+      const x = GAME.WIDTH / 2 + (i - 1) * 120;
+      const tabText = this.add.text(x, tabY, tab, {
+        fontFamily: 'Arial Black',
+        fontSize: '14px',
+        color: i === 0 ? '#FF4500' : '#666666'
+      });
+      tabText.setOrigin(0.5);
+      this.pauseOverlay.add(tabText);
+      return tabText;
+    });
+
+    // Tab underline
+    this.pauseTabUnderline = this.add.rectangle(GAME.WIDTH / 2 - 120, tabY + 15, 100, 3, 0xFF4500);
+    this.pauseOverlay.add(this.pauseTabUnderline);
+
+    // Content area
+    const contentY = 100;
+
+    // Controls tab content
+    const controlsContent = this.add.container(0, 0);
     const controls = [
       ['WASD', 'Move'],
       ['J', 'Attack / Mash to Escape'],
@@ -1219,65 +1460,245 @@ export default class FightScene extends Phaser.Scene {
       ['G', 'Grapple (near opponent)'],
       ['L', 'Table Slam'],
       ['F', 'Light Table on Fire'],
-      ['J+K', 'Finisher (when meter full)']
+      ['J+K', 'Finisher (meter full)']
     ];
-
-    let controlY = 130;
+    let cy = contentY;
     controls.forEach(([key, action]) => {
-      const keyText = this.add.text(GAME.WIDTH / 2 - 100, controlY, key, {
+      const keyText = this.add.text(GAME.WIDTH / 2 - 80, cy, key, {
         fontFamily: 'Arial Black',
-        fontSize: '14px',
+        fontSize: '13px',
         color: '#FFFF00'
       });
       keyText.setOrigin(1, 0.5);
-      this.pauseOverlay.add(keyText);
+      controlsContent.add(keyText);
 
-      const actionText = this.add.text(GAME.WIDTH / 2 - 80, controlY, action, {
+      const actionText = this.add.text(GAME.WIDTH / 2 - 60, cy, action, {
         fontFamily: 'Arial',
-        fontSize: '14px',
+        fontSize: '13px',
         color: '#CCCCCC'
       });
       actionText.setOrigin(0, 0.5);
-      this.pauseOverlay.add(actionText);
-
-      controlY += 22;
+      controlsContent.add(actionText);
+      cy += 22;
     });
+    this.pauseOverlay.add(controlsContent);
+    this.pauseTabContents.push(controlsContent);
 
-    // Tips
-    const tipsTitle = this.add.text(GAME.WIDTH / 2, 295, 'TIPS', {
-      fontFamily: 'Arial Black',
-      fontSize: '14px',
-      color: '#00FF00'
-    });
-    tipsTitle.setOrigin(0.5);
-    this.pauseOverlay.add(tipsTitle);
-
-    const tips = [
-      'Heavy hits (20+ dmg) cause knockdown',
-      'Mash J to escape grapples',
-      'Build meter for devastating finishers'
+    // Moves tab content
+    const movesContent = this.add.container(0, 0);
+    movesContent.setVisible(false);
+    const moves = [
+      ['PUNCH', 'J', '8-12 dmg'],
+      ['CHAIR HIT', 'J (with chair)', '22 dmg'],
+      ['TABLE SLAM', 'L (near table)', '35 dmg'],
+      ['FLAMING TABLE', 'L (table on fire)', '55 dmg'],
+      ['GRAPPLE', 'G (close range)', 'Initiates grab'],
+      ['THROW', 'J (grappling)', '14 dmg'],
+      ['BODY SLAM', 'K (grappling)', '16 dmg'],
+      ['SUPLEX', 'L (grappling)', '18 dmg'],
+      ['DDT', 'G (grappling)', '20 dmg'],
+      ['FINISHER', 'J+K (meter full)', '45 dmg']
     ];
+    let my = contentY;
+    moves.forEach(([name, input, dmg]) => {
+      const nameText = this.add.text(GAME.WIDTH / 2 - 150, my, name, {
+        fontFamily: 'Arial Black',
+        fontSize: '11px',
+        color: '#FF4500'
+      });
+      nameText.setOrigin(0, 0.5);
+      movesContent.add(nameText);
 
-    let tipY = 320;
-    tips.forEach(tip => {
-      const tipText = this.add.text(GAME.WIDTH / 2, tipY, '• ' + tip, {
+      const inputText = this.add.text(GAME.WIDTH / 2, my, input, {
         fontFamily: 'Arial',
         fontSize: '11px',
-        color: '#888888'
+        color: '#FFFF00'
       });
-      tipText.setOrigin(0.5);
-      this.pauseOverlay.add(tipText);
-      tipY += 18;
-    });
+      inputText.setOrigin(0.5);
+      movesContent.add(inputText);
 
-    // Resume/Quit options
-    const resumeText = this.add.text(GAME.WIDTH / 2, GAME.HEIGHT - 50, 'P - Resume    ENTER - Menu', {
-      fontFamily: 'Arial',
-      fontSize: '16px',
-      color: '#FFFFFF'
+      const dmgText = this.add.text(GAME.WIDTH / 2 + 120, my, dmg, {
+        fontFamily: 'Arial',
+        fontSize: '11px',
+        color: '#CCCCCC'
+      });
+      dmgText.setOrigin(0, 0.5);
+      movesContent.add(dmgText);
+      my += 18;
     });
-    resumeText.setOrigin(0.5);
-    this.pauseOverlay.add(resumeText);
+    this.pauseOverlay.add(movesContent);
+    this.pauseTabContents.push(movesContent);
+
+    // Options tab content
+    const optionsContent = this.add.container(0, 0);
+    optionsContent.setVisible(false);
+    this.pauseOptions = [];
+
+    const optionItems = [
+      { label: 'RESUME', action: 'resume' },
+      { label: 'RESTART MATCH', action: 'restart' },
+      { label: 'RETURN TO MENU', action: 'menu' }
+    ];
+
+    let oy = contentY + 40;
+    optionItems.forEach((item, i) => {
+      const optBg = this.add.rectangle(GAME.WIDTH / 2, oy, 200, 30, 0x333333, i === 0 ? 0.8 : 0.3);
+      optBg.setStrokeStyle(2, i === 0 ? 0xFF4500 : 0x555555);
+      optionsContent.add(optBg);
+
+      const optText = this.add.text(GAME.WIDTH / 2, oy, item.label, {
+        fontFamily: 'Arial Black',
+        fontSize: '16px',
+        color: i === 0 ? '#FFFFFF' : '#888888'
+      });
+      optText.setOrigin(0.5);
+      optionsContent.add(optText);
+
+      this.pauseOptions.push({ bg: optBg, text: optText, action: item.action });
+      oy += 45;
+    });
+    this.pauseOverlay.add(optionsContent);
+    this.pauseTabContents.push(optionsContent);
+
+    // Navigation hint
+    const navHint = this.add.text(GAME.WIDTH / 2, GAME.HEIGHT - 30, 'LEFT/RIGHT: Switch Tab    UP/DOWN: Navigate    ENTER: Select    P: Resume', {
+      fontFamily: 'Arial',
+      fontSize: '11px',
+      color: '#666666'
+    });
+    navHint.setOrigin(0.5);
+    this.pauseOverlay.add(navHint);
+
+    // Setup pause menu input
+    this.setupPauseInput();
+  }
+
+  setupPauseInput() {
+    // Pause menu navigation keys
+    this.pauseLeftKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT);
+    this.pauseRightKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT);
+    this.pauseUpKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP);
+    this.pauseDownKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN);
+    this.pauseAKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
+    this.pauseDKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+    this.pauseWKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
+    this.pauseSKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
+  }
+
+  updatePauseMenu() {
+    if (!this.isPaused || !this.pauseOverlay) return;
+
+    // Tab navigation (left/right)
+    if (Phaser.Input.Keyboard.JustDown(this.pauseLeftKey) ||
+        Phaser.Input.Keyboard.JustDown(this.pauseAKey)) {
+      this.switchPauseTab(-1);
+    }
+    if (Phaser.Input.Keyboard.JustDown(this.pauseRightKey) ||
+        Phaser.Input.Keyboard.JustDown(this.pauseDKey)) {
+      this.switchPauseTab(1);
+    }
+
+    // Option navigation (up/down) - only in Options tab
+    if (this.pauseTabIndex === 2) {
+      if (Phaser.Input.Keyboard.JustDown(this.pauseUpKey) ||
+          Phaser.Input.Keyboard.JustDown(this.pauseWKey)) {
+        this.navigatePauseOption(-1);
+      }
+      if (Phaser.Input.Keyboard.JustDown(this.pauseDownKey) ||
+          Phaser.Input.Keyboard.JustDown(this.pauseSKey)) {
+        this.navigatePauseOption(1);
+      }
+
+      // Select option with Enter
+      if (Phaser.Input.Keyboard.JustDown(this.menuEnterKey)) {
+        this.selectPauseOption();
+      }
+    }
+  }
+
+  switchPauseTab(direction) {
+    const prevTab = this.pauseTabIndex;
+    this.pauseTabIndex = Phaser.Math.Wrap(this.pauseTabIndex + direction, 0, this.pauseTabs.length);
+
+    if (prevTab !== this.pauseTabIndex) {
+      // Play nav sound
+      if (this.sound.get('sfx-menu-navigate')) {
+        this.sound.play('sfx-menu-navigate', { volume: 0.3 });
+      }
+
+      // Update tab visuals
+      this.pauseTabTexts.forEach((text, i) => {
+        text.setColor(i === this.pauseTabIndex ? '#FF4500' : '#666666');
+      });
+
+      // Move underline
+      const targetX = GAME.WIDTH / 2 + (this.pauseTabIndex - 1) * 120;
+      this.tweens.add({
+        targets: this.pauseTabUnderline,
+        x: targetX,
+        duration: 150,
+        ease: 'Power2'
+      });
+
+      // Show/hide content
+      this.pauseTabContents.forEach((content, i) => {
+        content.setVisible(i === this.pauseTabIndex);
+      });
+
+      // Reset option selection when entering Options tab
+      if (this.pauseTabIndex === 2) {
+        this.pauseOptionIndex = 0;
+        this.updatePauseOptionVisuals();
+      }
+    }
+  }
+
+  navigatePauseOption(direction) {
+    const prevIndex = this.pauseOptionIndex;
+    this.pauseOptionIndex = Phaser.Math.Wrap(this.pauseOptionIndex + direction, 0, this.pauseOptions.length);
+
+    if (prevIndex !== this.pauseOptionIndex) {
+      if (this.sound.get('sfx-menu-navigate')) {
+        this.sound.play('sfx-menu-navigate', { volume: 0.3 });
+      }
+      this.updatePauseOptionVisuals();
+    }
+  }
+
+  updatePauseOptionVisuals() {
+    this.pauseOptions.forEach((opt, i) => {
+      const isSelected = i === this.pauseOptionIndex;
+      opt.bg.setFillStyle(0x333333, isSelected ? 0.8 : 0.3);
+      opt.bg.setStrokeStyle(2, isSelected ? 0xFF4500 : 0x555555);
+      opt.text.setColor(isSelected ? '#FFFFFF' : '#888888');
+    });
+  }
+
+  selectPauseOption() {
+    const selected = this.pauseOptions[this.pauseOptionIndex];
+    if (!selected) return;
+
+    if (this.sound.get('sfx-menu-select')) {
+      this.sound.play('sfx-menu-select', { volume: 0.5 });
+    }
+
+    switch (selected.action) {
+      case 'resume':
+        this.togglePause();
+        break;
+      case 'restart':
+        this.effectsManager.stopAllAudio();
+        this.scene.restart({
+          mode: this.gameMode,
+          player: this.playerCharKey,
+          opponent: this.opponentCharKey
+        });
+        break;
+      case 'menu':
+        this.effectsManager.stopAllAudio();
+        this.scene.start('MenuScene');
+        break;
+    }
   }
 
   hidePauseOverlay() {
@@ -1300,12 +1721,9 @@ export default class FightScene extends Phaser.Scene {
       }
     }
 
-    // Handle quit to menu while paused
+    // Handle pause menu navigation
     if (this.isPaused) {
-      if (Phaser.Input.Keyboard.JustDown(this.menuEnterKey) || mobile.justPressed('attack')) {
-        this.effectsManager.stopAllAudio();
-        this.scene.start('MenuScene');
-      }
+      this.updatePauseMenu();
       return;
     }
 
@@ -1386,6 +1804,33 @@ export default class FightScene extends Phaser.Scene {
     if (this.matchTimer) {
       this.matchTimer.update(time, delta);
     }
+
+    // Update dynamic music based on health
+    this.updateDynamicMusic();
+  }
+
+  updateDynamicMusic() {
+    if (!this.effectsManager || !this.effectsManager.fightMusic) return;
+
+    const playerHealthPercent = this.player.health / this.player.maxHealth;
+    const enemyHealthPercent = this.enemy.health / this.enemy.maxHealth;
+    const lowestHealth = Math.min(playerHealthPercent, enemyHealthPercent);
+
+    // Intensity mode when either fighter below 30%
+    const shouldIntensify = lowestHealth < 0.30;
+    const currentlyIntense = this.musicIntense || false;
+
+    if (shouldIntensify && !currentlyIntense) {
+      // Speed up and increase volume
+      this.effectsManager.fightMusic.setRate(1.15);
+      this.effectsManager.fightMusic.setVolume(0.45);
+      this.musicIntense = true;
+    } else if (!shouldIntensify && currentlyIntense && lowestHealth > 0.40) {
+      // Return to normal when health above 40%
+      this.effectsManager.fightMusic.setRate(1.0);
+      this.effectsManager.fightMusic.setVolume(0.3);
+      this.musicIntense = false;
+    }
   }
 
   shutdown() {
@@ -1400,6 +1845,7 @@ export default class FightScene extends Phaser.Scene {
     this.events.off('table-broken', this.onTableBroken, this);
     this.events.off('table-ignited', this.onTableIgnited, this);
     this.events.off('match-time-up', this.onMatchTimeUp, this);
+    this.events.off('combat-hit', this.onCombatHit, this);
 
     if (this.combatSystem) this.combatSystem.destroy();
     if (this.effectsManager) this.effectsManager.destroy();
@@ -1410,6 +1856,7 @@ export default class FightScene extends Phaser.Scene {
     if (this.damageNumbers) this.damageNumbers.destroy();
     if (this.comboCounter) this.comboCounter.destroy();
     if (this.matchTimer) this.matchTimer.destroy();
+    if (this.practiceOverlay) this.practiceOverlay.destroy();
 
     // Stop any active replay
     if (this.replayManager) {

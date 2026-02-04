@@ -8,6 +8,10 @@ import CareerMenuScene from './scenes/CareerMenuScene.js';
 import OptionsScene from './scenes/OptionsScene.js';
 import FightScene from './scenes/FightScene.js';
 import GameOverScene from './scenes/GameOverScene.js';
+import StatsScene from './scenes/StatsScene.js';
+import ReplayScene from './scenes/ReplayScene.js';
+import TournamentScene from './scenes/TournamentScene.js';
+import TournamentBracketScene from './scenes/TournamentBracketScene.js';
 
 const config = {
   type: Phaser.AUTO,
@@ -27,7 +31,7 @@ const config = {
       debug: false
     }
   },
-  scene: [BootScene, TitleScene, MenuScene, CharacterSelectScene, ArenaSelectScene, CareerMenuScene, OptionsScene, FightScene, GameOverScene],
+  scene: [BootScene, TitleScene, MenuScene, CharacterSelectScene, ArenaSelectScene, CareerMenuScene, OptionsScene, FightScene, GameOverScene, StatsScene, ReplayScene, TournamentScene, TournamentBracketScene],
   pixelArt: true,
   roundPixels: true,
   input: {
