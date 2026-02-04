@@ -97,13 +97,20 @@ export default class MatchTimer {
 
   onTimeUp() {
     this.isRunning = false;
+
+    // Safety check
+    if (!this.scene || !this.timeText) return;
+
     this.timeText.setText('TIME!');
     this.timeText.setColor('#FF0000');
 
     // Emit time up event - FightScene will handle determining winner
-    this.scene.events.emit('match-time-up');
+    if (this.scene.events) {
+      this.scene.events.emit('match-time-up');
+    }
 
     // Flash effect
+    if (!this.scene.tweens) return;
     this.scene.tweens.add({
       targets: this.timeText,
       scale: 1.5,
@@ -124,6 +131,6 @@ export default class MatchTimer {
   }
 
   destroy() {
-    this.container.destroy();
+    if (this.container) this.container.destroy();
   }
 }

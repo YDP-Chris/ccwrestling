@@ -196,6 +196,9 @@ export default class PracticeOverlay {
   }
 
   onHit(data) {
+    // Safety check - scene may be transitioning
+    if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
+
     const { damage, attacker } = data;
 
     // Only track player damage
@@ -207,14 +210,20 @@ export default class PracticeOverlay {
   }
 
   onCombo(data) {
+    // Safety check - scene may be transitioning
+    if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
+
     const { comboCount } = data;
     this.comboCount = comboCount;
     this.updateDamageDisplay();
   }
 
   onComboEnd() {
+    // Safety check - scene may be transitioning
+    if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
+
     // Flash combo damage if it was significant
-    if (this.comboDamage >= 30) {
+    if (this.comboDamage >= 30 && this.scene.tweens && this.comboDmgText) {
       this.scene.tweens.add({
         targets: this.comboDmgText,
         scale: 1.3,
@@ -224,11 +233,15 @@ export default class PracticeOverlay {
     }
 
     // Reset combo stats after a delay
-    this.scene.time.delayedCall(500, () => {
-      this.comboCount = 0;
-      this.comboDamage = 0;
-      this.updateDamageDisplay();
-    });
+    if (this.scene.time) {
+      this.scene.time.delayedCall(500, () => {
+        // Safety check - scene may be transitioning when timer fires
+        if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
+        this.comboCount = 0;
+        this.comboDamage = 0;
+        this.updateDamageDisplay();
+      });
+    }
   }
 
   updateDamageDisplay() {
@@ -256,9 +269,11 @@ export default class PracticeOverlay {
   }
 
   destroy() {
-    this.scene.events.off('combat-hit', this.onHit, this);
-    this.scene.events.off('combat-combo', this.onCombo, this);
-    this.scene.events.off('combat-combo-end', this.onComboEnd, this);
-    this.container.destroy();
+    if (this.scene && this.scene.events) {
+      this.scene.events.off('combat-hit', this.onHit, this);
+      this.scene.events.off('combat-combo', this.onCombo, this);
+      this.scene.events.off('combat-combo-end', this.onComboEnd, this);
+    }
+    if (this.container) this.container.destroy();
   }
 }

@@ -114,6 +114,8 @@ export default class HealthBar {
   }
 
   onFighterDamaged(fighter, damage) {
+    // Safety check - scene may be transitioning
+    if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
     if (fighter === this.fighter) {
       this.updateHealth(damage);
     }
@@ -125,6 +127,10 @@ export default class HealthBar {
   }
 
   updateHealth(damage = 0) {
+    // Safety checks
+    if (!this.scene || !this.scene.tweens) return;
+    if (!this.fighter || !this.fill) return;
+
     const healthPercent = this.fighter.health / this.fighter.maxHealth;
     const targetWidth = this.fillWidth * healthPercent;
     const currentWidth = this.fill.width;
@@ -207,10 +213,12 @@ export default class HealthBar {
   }
 
   destroy() {
-    this.scene.events.off('fighter-damaged', this.onFighterDamaged, this);
-    if (this.lowHealthPulse) {
+    if (this.scene && this.scene.events) {
+      this.scene.events.off('fighter-damaged', this.onFighterDamaged, this);
+    }
+    if (this.lowHealthPulse && this.scene && this.scene.tweens && this.border) {
       this.scene.tweens.killTweensOf(this.border);
     }
-    this.container.destroy();
+    if (this.container) this.container.destroy();
   }
 }

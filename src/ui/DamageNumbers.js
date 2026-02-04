@@ -14,6 +14,8 @@ export default class DamageNumbers {
   }
 
   showDamage(fighter, damage, attacker) {
+    // Safety check - scene may be transitioning
+    if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
     if (!fighter || damage <= 0) return;
 
     // Determine color based on damage amount
@@ -35,6 +37,8 @@ export default class DamageNumbers {
   }
 
   showThrowDamage(data) {
+    // Safety check - scene may be transitioning
+    if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
     const { target, damage, moveName } = data;
     if (!target) return;
 
@@ -80,7 +84,9 @@ export default class DamageNumbers {
   }
 
   destroy() {
-    this.scene.events.off('fighter-damaged', this.showDamage, this);
-    this.scene.events.off('combat-grapple-throw', this.showThrowDamage, this);
+    if (this.scene && this.scene.events) {
+      this.scene.events.off('fighter-damaged', this.showDamage, this);
+      this.scene.events.off('combat-grapple-throw', this.showThrowDamage, this);
+    }
   }
 }

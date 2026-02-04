@@ -76,6 +76,8 @@ export default class ExtremeMeter {
   }
 
   onMeterChange(fighter) {
+    // Safety check - scene may be transitioning
+    if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
     if (fighter === this.fighter) {
       this.updateMeter();
     }
@@ -86,6 +88,10 @@ export default class ExtremeMeter {
   }
 
   updateMeter() {
+    // Safety checks
+    if (!this.scene || !this.scene.tweens) return;
+    if (!this.fighter || !this.fill) return;
+
     const meterPercent = this.fighter.extremeMeter / METER.MAX;
     const targetWidth = this.fillWidth * meterPercent;
 
@@ -122,6 +128,10 @@ export default class ExtremeMeter {
   }
 
   onMeterFull() {
+    // Safety check
+    if (!this.scene || !this.scene.tweens) return;
+    if (!this.readyText) return;
+
     // Show ready text
     this.readyText.setVisible(true);
 
@@ -163,6 +173,9 @@ export default class ExtremeMeter {
   }
 
   onMeterUsed() {
+    // Safety check
+    if (!this.scene || !this.scene.tweens) return;
+
     // Stop all animations
     this.scene.tweens.killTweensOf(this.readyText);
     this.scene.tweens.killTweensOf(this.glow);
@@ -182,11 +195,15 @@ export default class ExtremeMeter {
   }
 
   destroy() {
-    this.scene.events.off('fighter-meter-change', this.onMeterChange, this);
-    this.scene.tweens.killTweensOf(this.readyText);
-    this.scene.tweens.killTweensOf(this.glow);
-    this.scene.tweens.killTweensOf(this.border);
-    this.scene.tweens.killTweensOf(this.label);
-    this.container.destroy();
+    if (this.scene && this.scene.events) {
+      this.scene.events.off('fighter-meter-change', this.onMeterChange, this);
+    }
+    if (this.scene && this.scene.tweens) {
+      if (this.readyText) this.scene.tweens.killTweensOf(this.readyText);
+      if (this.glow) this.scene.tweens.killTweensOf(this.glow);
+      if (this.border) this.scene.tweens.killTweensOf(this.border);
+      if (this.label) this.scene.tweens.killTweensOf(this.label);
+    }
+    if (this.container) this.container.destroy();
   }
 }
