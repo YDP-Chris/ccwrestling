@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 CCW (Carnage Championship Wrestling) is a browser-based 2D beat-em-up extreme wrestling game celebrating hardcore/deathmatch wrestling in the style of ECW, FMW, and BJW. Built with Phaser 3 and Vite.
 
-**Current Status:** v0.7 - 5 characters designed (2 fully animated), core systems complete, working toward v1.0.
+**Current Status:** v1.1 - 5 fully animated characters, 9 game modes, tournament system, stats tracking, replay system.
 
 ## Development Commands
 
@@ -39,9 +39,11 @@ vercel deploy --prod     # Deploy to Vercel
 ```
 BootScene → TitleScene → MenuScene → CharacterSelectScene → FightScene → GameOverScene
                               ↓
-                        CareerMenuScene
-                              ↓
-                        OptionsScene
+                    ┌─────────┼─────────┬────────────┐
+                    ↓         ↓         ↓            ↓
+             CareerMenuScene  OptionsScene  StatsScene  ReplayScene
+                                            ↓
+                              TournamentScene → TournamentBracketScene
 ```
 
 ### Core Systems (src/systems/)
@@ -49,12 +51,23 @@ BootScene → TitleScene → MenuScene → CharacterSelectScene → FightScene �
 |--------|---------|
 | `CombatSystem.js` | Hit detection, damage calculation, knockback |
 | `AIController.js` | Enemy AI with 7 states (IDLE, APPROACH, ATTACK, RETREAT, SEEK_WEAPON, SEEK_TABLE, GRAPPLE) |
-| `EffectsManager.js` | Particles, screen shake, audio, announcer callouts |
+| `EffectsManager.js` | Particles, screen shake, audio, dynamic music, 60+ announcer callouts |
 | `GrappleLogic.js` | Pure grapple logic (Phaser-independent, fully unit tested) |
-| `StatsManager.js` | Match statistics tracking |
+| `StatsManager.js` | Match statistics, achievements, per-character records |
 | `CareerManager.js` | Career mode progression data |
 | `TransitionManager.js` | Scene transitions with data passing |
+| `TournamentManager.js` | Tournament bracket creation, progression, persistence |
 | `replay/` | Deterministic replay system with seeded RNG |
+
+### UI Components (src/ui/)
+| Component | Purpose |
+|-----------|---------|
+| `HealthBar.js` | Fighter health display |
+| `ExtremeMeter.js` | Special move meter |
+| `DamageNumbers.js` | Floating damage text |
+| `ComboCounter.js` | Combo hit display |
+| `MatchTimer.js` | Match countdown timer |
+| `PracticeOverlay.js` | Practice mode move list, input display, damage tracker |
 
 ### Entity Pattern
 `Fighter.js` is the base class with a state machine:
@@ -103,10 +116,13 @@ All tunable values live in `src/config/`:
 
 ## Testing
 
-Unit tests cover `GrappleLogic` (61+ tests) and replay system. Run specific tests:
+Unit tests (150 total) cover GrappleLogic, replay system, TournamentManager, and effects. Run specific tests:
 ```bash
-npm run test -- grapple        # Run grapple tests
-npm run test -- replay         # Run replay tests
+npm run test                   # Run all 150 unit tests
+npm run test -- grapple        # Run grapple tests (58)
+npm run test -- replay         # Run replay tests (21)
+npm run test -- tournament     # Run tournament tests (37)
+npm run test -- effects        # Run effects tests (22)
 ```
 
 E2E tests in `tests/` cover full game flows (chair mechanics, table mechanics, AI behavior).

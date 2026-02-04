@@ -10,12 +10,18 @@ A browser-based 2D beat-em-up wrestling game celebrating hardcore/deathmatch wre
 - **5 Arenas** - Warehouse, Basement, Boiler Room, Factory, Parking Lot
 - **Weapons** - Steel chairs and tables (with fire!)
 - **Grapple System** - 4 throws: Suplex, DDT, Bodyslam, and basic throw
+- **Dynamic Audio** - Music intensifies at low health, varied hit sounds, 60+ announcer callouts
+- **Replay System** - Save and rewatch your best matches
+- **Statistics Tracking** - Career stats, per-character records, achievements
 - **Multiple Game Modes:**
   - Quick Match - Jump right in
   - Best of 3 - First to 2 round wins
+  - First Blood - First hit wins (lightning fast!)
+  - Iron Man - Most KOs in 3 minutes
+  - Tournament - 4 or 8-fighter bracket competition
   - Arcade - Fight through the roster
   - Survival - Endless fights, health carries over
-  - Practice - Train without AI attacks
+  - Practice - Train with move list overlay
   - Career - Rise from rookie to champion
 
 ## Controls

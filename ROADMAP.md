@@ -6,7 +6,7 @@
 
 ---
 
-## Current State (v1.0.0) - Released 2026-02-03
+## Current State (v1.1.0) - Released 2026-02-03
 
 ### Done ✅
 - [x] Core fighting mechanics (movement, punch, hitstun, knockdown)
@@ -19,18 +19,25 @@
 - [x] Menu, Title, and Game Over screens
 - [x] Character Select screen (functional)
 - [x] Arena Select screen (functional)
-- [x] Unit tests (61+ grapple tests, replay tests)
-- [x] Replay system with seeded RNG
-- [x] Pause functionality
+- [x] Unit tests (150 tests - grapple, replay, tournament, effects)
+- [x] Replay system with seeded RNG + save/load UI
+- [x] Pause functionality with tabbed menu
 - [x] Chair weapon (pickup, swing, breaks after 3 hits, debris particles)
 - [x] Table weapon (placement, break mechanics, fire state)
 - [x] Fire mechanic (ignite table, DOT 3dmg × 6 ticks)
 - [x] Career mode (5 chapters, 6 PPVs, rivalry system, full UI)
-- [x] Stats tracking system
+- [x] Stats tracking system with dedicated Stats screen
 - [x] Transition manager for scene changes
 - [x] All SFX wired and playing (hit, chair, table, fire, crowd, menu, KO, music)
 - [x] Best of 3 mode with round system
 - [x] Survival mode with streak tracking and difficulty ramp
+- [x] First Blood mode (first hit wins)
+- [x] Iron Man mode (most KOs in 3 minutes)
+- [x] Tournament mode (4/8-fighter brackets)
+- [x] Dynamic music (intensifies at low health)
+- [x] Practice mode overlay (move list, inputs, damage tracker)
+- [x] Expanded announcer callouts (60+ across 12 categories)
+- [x] Hit sound variety (pitch variation)
 
 ### Partially Done 🟡
 - [ ] Fire visual effects on burning fighters (deferred)
@@ -164,6 +171,29 @@
 
 ---
 
+## Phase 5: Extended Features (Sessions 23-26) ✅ COMPLETE
+
+**Goal:** Add more game modes, polish, and replayability.
+
+### Session 23-24: New Match Modes ✅
+- [x] First Blood mode - first hit wins, lightning fast rounds
+- [x] Iron Man mode - most KOs in 3 minutes, fighters reset on KO
+- [x] Tournament mode - 4 or 8-fighter bracket tournaments
+- [x] Tournament bracket visualization scene
+
+### Session 25-26: Polish & UI ✅
+- [x] Better pause menu with tabs (Controls, Moves, Options)
+- [x] Practice mode overlay (move list, input display, damage tracker)
+- [x] Stats screen with 4 tabs (Overall, Characters, Modes, Achievements)
+- [x] Replay save/load UI (localStorage, keeps last 10)
+- [x] Dynamic music intensity (speeds up below 30% health)
+- [x] Hit sound variety using pitch variation (detune)
+- [x] Expanded announcer callouts (60+ across 12 categories)
+
+**Phase 5 Deliverable:** Extended game modes and polish! ✅
+
+---
+
 ## Quick Reference: Asset Status
 
 ### Characters (5 total)
@@ -206,10 +236,15 @@
 | Arena Select | ✅ Done |
 | Mode Select | ✅ Done (in Menu) |
 | Fight HUD | ✅ Done |
-| Pause | ✅ Done |
+| Pause | ✅ Done (tabbed menu) |
 | Game Over | ✅ Done |
 | Options | ✅ Done |
 | Career Menu | ✅ Done |
+| Stats Screen | ✅ Done (4 tabs) |
+| Replay Screen | ✅ Done |
+| Tournament Setup | ✅ Done |
+| Tournament Bracket | ✅ Done |
+| Practice Overlay | ✅ Done |
 
 ---
 
@@ -221,5 +256,16 @@
 | Phase 2 | 5-10 | Audio & Polish | ✅ Complete |
 | Phase 3 | 11-18 | Game Modes | ✅ Complete |
 | Phase 4 | 19-22 | Ship v1.0 | ✅ Complete |
+| Phase 5 | 23-26 | Extended Features | ✅ Complete |
 
-**v1.0.0 SHIPPED!** 🎉
+**v1.1.0 SHIPPED!** 🎉
+
+### v1.1.0 Features (Phase 5)
+- 3 new match modes: First Blood, Iron Man, Tournament
+- Stats screen with career statistics and achievements
+- Replay save/load system (last 10 matches)
+- Enhanced pause menu with tabs
+- Practice mode overlay
+- Dynamic music intensity
+- 60+ announcer callouts
+- 150 unit tests
